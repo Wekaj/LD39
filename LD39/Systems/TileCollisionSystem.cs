@@ -33,7 +33,7 @@ namespace LD39.Systems
             {
                 Vector2i futureTile = GetTile(positionComponent.Position + velocityComponent.Velocity * DeltaTime.AsSeconds()
                     + new Vector2f(tileCollisionComponent.Size, 0f));
-                if (_collisions[futureTile.X, futureTile.Y])
+                if (GetCollision(futureTile))
                 {
                     positionComponent.Position = new Vector2f(futureTile.X * _tileSize - tileCollisionComponent.Size, positionComponent.Position.Y);
                     velocityComponent.Velocity = new Vector2f(0f, velocityComponent.Velocity.Y);
@@ -44,7 +44,7 @@ namespace LD39.Systems
             {
                 Vector2i futureTile = GetTile(positionComponent.Position + velocityComponent.Velocity * DeltaTime.AsSeconds()
                     - new Vector2f(tileCollisionComponent.Size, 0f));
-                if (_collisions[futureTile.X, futureTile.Y])
+                if (GetCollision(futureTile))
                 {
                     positionComponent.Position = new Vector2f((futureTile.X + 1f) * _tileSize + tileCollisionComponent.Size, positionComponent.Position.Y);
                     velocityComponent.Velocity = new Vector2f(0f, velocityComponent.Velocity.Y);
@@ -56,7 +56,7 @@ namespace LD39.Systems
             {
                 Vector2i futureTile = GetTile(positionComponent.Position + velocityComponent.Velocity * DeltaTime.AsSeconds()
                     + new Vector2f(0f, tileCollisionComponent.Size));
-                if (_collisions[futureTile.X, futureTile.Y])
+                if (GetCollision(futureTile))
                 {
                     positionComponent.Position = new Vector2f(positionComponent.Position.X, futureTile.Y * _tileSize - tileCollisionComponent.Size);
                     velocityComponent.Velocity = new Vector2f(velocityComponent.Velocity.X, 0f);
@@ -67,7 +67,7 @@ namespace LD39.Systems
             {
                 Vector2i futureTile = GetTile(positionComponent.Position + velocityComponent.Velocity * DeltaTime.AsSeconds()
                     - new Vector2f(0f, tileCollisionComponent.Size));
-                if (_collisions[futureTile.X, futureTile.Y])
+                if (GetCollision(futureTile))
                 {
                     positionComponent.Position = new Vector2f(positionComponent.Position.X, (futureTile.Y + 1f) * _tileSize + tileCollisionComponent.Size);
                     velocityComponent.Velocity = new Vector2f(velocityComponent.Velocity.X, 0f);
@@ -92,9 +92,16 @@ namespace LD39.Systems
             return new Vector2i((int)(position.X / _tileSize), (int)(position.Y / _tileSize));
         }
 
+        private bool GetCollision(Vector2i tile)
+        {
+            if (tile.X < 0 || tile.Y < 0 || tile.X >= _collisions.GetLength(0) || tile.Y >= _collisions.GetLength(1))
+                return false;
+            return _collisions[tile.X, tile.Y];
+        }
+
         private bool GetCollision(Vector2f position)
         {
-            return _collisions[(int)(position.X / _tileSize), (int)(position.Y / _tileSize)];
+            return GetCollision(GetTile(position));
         }
     }
 }
