@@ -64,6 +64,7 @@
     <Compile Include="Animation\IAnimation.cs" />
     <Compile Include="Components\AnimationComponent.cs" />
     <Compile Include="Components\CharacterComponent.cs" />
+    <Compile Include="Components\LockComponent.cs" />
     <Compile Include="Components\SpriteComponent.cs" />
     <Compile Include="Components\VelocityComponent.cs" />
     <Compile Include="Components\PositionComponent.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Systems\CharacterMovementSystem.cs" />
     <Compile Include="Systems\DrawSystem.cs" />
     <Compile Include="Systems\EntityUpdatingSystem.cs" />
+    <Compile Include="Systems\LockSystem.cs" />
     <Compile Include="Systems\VelocitySystem.cs" />
     <Compile Include="Tiles\TileMap.cs" />
   </ItemGroup>

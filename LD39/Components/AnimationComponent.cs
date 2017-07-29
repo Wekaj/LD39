@@ -11,16 +11,22 @@ namespace LD39.Components
         public Time Duration { get; set; }
         public Time Timer { get; set; }
         public bool Looping { get; set; }
+        public bool DestroyAtEnd { get; set; } = false;
 
-        public void Play(IAnimation animation, Time duration, bool looping = false)
+        public void Play(IAnimation animation, Time duration, bool looping = false, bool keepProgress = false)
         {
             if (Playing && animation == Animation && duration == Duration && Looping == looping)
                 return;
 
             Playing = true;
             Animation = animation;
-            Duration = duration;
-            Timer = Time.Zero;
+
+            if (!keepProgress || duration != Duration)
+            {
+                Duration = duration;
+                Timer = Time.Zero;
+            }
+
             Looping = looping;
         }
 

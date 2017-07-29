@@ -44,6 +44,11 @@ namespace LD39
         private readonly Context _context;
         private readonly ScreenStack _screens;
 
+        public static readonly Color Shade0 = new Color(15, 56, 15);
+        public static readonly Color Shade1 = new Color(48, 98, 48);
+        public static readonly Color Shade2 = new Color(139, 172, 15);
+        public static readonly Color Shade3 = new Color(155, 188, 15);
+
         public Game()
         {
             _window = new RenderWindow(new VideoMode(1366, 768), "Running out of Power");
@@ -59,10 +64,12 @@ namespace LD39
             _actions.Add(ActionID.MoveRight, new KeyboardAction(Keyboard.Key.Right));
             _actions.Add(ActionID.MoveUp, new KeyboardAction(Keyboard.Key.Up));
             _actions.Add(ActionID.MoveDown, new KeyboardAction(Keyboard.Key.Down));
+            _actions.Add(ActionID.Attack, new KeyboardAction(Keyboard.Key.Z));
 
             _textures = new TextureLoader();
             _textures.Load(TextureID.Tiles, "Resources/tiles.png");
             _textures.Load(TextureID.Character, "Resources/character.png");
+            _textures.Load(TextureID.Slash, "Resources/slash.png");
 
             _fonts = new FontLoader();
             _soundBuffers = new SoundBufferLoader();
@@ -106,11 +113,11 @@ namespace LD39
 
         private void Draw()
         {
-            _upscaleTexture.Clear();
+            _upscaleTexture.Clear(Shade0);
             _upscaleTexture.Draw(_screens);
             _upscaleTexture.Display();
 
-            _window.Clear();
+            _window.Clear(Shade0);
             _window.Draw(_upscaleSprite);
             _window.Display();
         }

@@ -29,6 +29,8 @@ namespace LD39.Systems
             {
                 animationComponent.Animation.Animate(spriteComponent.Sprite, 1f);
                 animationComponent.Playing = false;
+                if (animationComponent.DestroyAtEnd)
+                    entity.Delete();
                 return;
             }
 

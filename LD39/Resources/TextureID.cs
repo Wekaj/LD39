@@ -3,6 +3,7 @@
     internal enum TextureID
     {
         Tiles,
-        Character
+        Character,
+        Slash
     }
 }
