@@ -1,4 +1,5 @@
 ﻿using LD39.Input;
+using LD39.Resources;
 using LD39.Screens;
 using LD39.Screens.Game;
 using SFML.Graphics;
@@ -37,6 +38,10 @@ namespace LD39
         private readonly RenderTexture _upscaleTexture;
         private readonly Sprite _upscaleSprite;
         private readonly ActionManager _actions;
+        private readonly TextureLoader _textures;
+        private readonly FontLoader _fonts;
+        private readonly SoundBufferLoader _soundBuffers;
+        private readonly Context _context;
         private readonly ScreenStack _screens;
 
         public Game()
@@ -49,7 +54,13 @@ namespace LD39
 
             _actions = new ActionManager();
 
-            _screens = new ScreenStack(new GameScreen());
+            _textures = new TextureLoader();
+            _fonts = new FontLoader();
+            _soundBuffers = new SoundBufferLoader();
+
+            _context = new Context(_window, _upscaleTexture, _actions, _textures, _fonts, _soundBuffers);
+
+            _screens = new ScreenStack(new GameScreen(_context));
         }
 
         public void Run()
