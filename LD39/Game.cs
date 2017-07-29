@@ -32,7 +32,7 @@ namespace LD39
         }
         #endregion
 
-        private const uint _scale = 2;
+        private const uint _scale = 4;
         private static readonly Time _timePerFrame = Time.FromSeconds(1f / 60f);
         private readonly RenderWindow _window;
         private readonly RenderTexture _upscaleTexture;
@@ -55,6 +55,8 @@ namespace LD39
             _actions = new ActionManager();
 
             _textures = new TextureLoader();
+            _textures.Load(TextureID.Tiles, "Resources/tiles.png");
+
             _fonts = new FontLoader();
             _soundBuffers = new SoundBufferLoader();
 
