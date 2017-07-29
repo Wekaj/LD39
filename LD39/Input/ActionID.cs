@@ -2,5 +2,9 @@
 {
     internal enum ActionID
     {
+        MoveLeft,
+        MoveRight,
+        MoveUp,
+        MoveDown
     }
 }

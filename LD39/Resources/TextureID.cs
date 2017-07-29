@@ -2,6 +2,7 @@
 {
     internal enum TextureID
     {
-        Tiles
+        Tiles,
+        Character
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Artemis;
 using Artemis.Manager;
+using LD39.Components;
 using LD39.Resources;
 using LD39.Systems;
 using LD39.Tiles;
@@ -34,8 +35,19 @@ namespace LD39.Screens.Game
             _foreground = new TileMap(_context.Textures[TextureID.Tiles], 16, new int[backgroundMap.GetLength(0), backgroundMap.GetLength(1)]);
 
             _entityWorld = new EntityWorld();
+            _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new DrawSystem(context.UpscaleTexture, _background, _foreground), GameLoopType.Draw);
+
+            Entity character = _entityWorld.CreateEntity();
+            character.AddComponent(new CharacterComponent());
+            character.AddComponent(new PositionComponent());
+            character.AddComponent(new VelocityComponent());
+            character.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Character])
+            {
+                TextureRect = new IntRect(0, 0, 16, 32),
+                Position = new Vector2f(-7.5f, -25f)
+            }));
         }
 
         public ScreenChangeRequest Update(Time deltaTime)

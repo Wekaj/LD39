@@ -49,13 +49,20 @@ namespace LD39
             _window = new RenderWindow(new VideoMode(1366, 768), "Running out of Power");
             _window.Closed += Window_Closed;
 
+            _window.SetVerticalSyncEnabled(true);
+
             _upscaleTexture = new RenderTexture(_window.Size.X / _scale, _window.Size.Y / _scale);
             _upscaleSprite = new Sprite(_upscaleTexture.Texture) { Scale = new Vector2f(_scale, _scale) };
 
             _actions = new ActionManager();
+            _actions.Add(ActionID.MoveLeft, new KeyboardAction(Keyboard.Key.Left));
+            _actions.Add(ActionID.MoveRight, new KeyboardAction(Keyboard.Key.Right));
+            _actions.Add(ActionID.MoveUp, new KeyboardAction(Keyboard.Key.Up));
+            _actions.Add(ActionID.MoveDown, new KeyboardAction(Keyboard.Key.Down));
 
             _textures = new TextureLoader();
             _textures.Load(TextureID.Tiles, "Resources/tiles.png");
+            _textures.Load(TextureID.Character, "Resources/character.png");
 
             _fonts = new FontLoader();
             _soundBuffers = new SoundBufferLoader();
