@@ -126,6 +126,8 @@ namespace LD39.Systems
                 || animationComponent.Animation == _turningDownRight || animationComponent.Animation == _turningUpRight)
                 currentDirection = Direction.Right;
 
+            CharacterComponent characterComponent = entity.GetComponent<CharacterComponent>();
+
             VelocityComponent velocityComponent = entity.GetComponent<VelocityComponent>();
             float velocity = velocityComponent.Velocity.GetLength();
 
@@ -134,26 +136,31 @@ namespace LD39.Systems
                 Entity slash = EntityWorld.CreateEntity();
                 slash.AddComponent(new PositionComponent(positionComponent.Position));
                 slash.AddComponent(new AnimationComponent());
-                slash.AddComponent(new LockComponent(entity));
+                slash.AddComponent(new LockComponent(entity, new Vector2f()));
                 slash.GetComponent<AnimationComponent>().Play(_slashAnimation, Time.FromSeconds(0.5f), false);
                 slash.GetComponent<AnimationComponent>().DestroyAtEnd = true;
 
                 switch (currentDirection)
                 {
                     case Direction.Down:
-                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashDown]) { Position = new Vector2f(-16f, -7f) }, Layer.Above));
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashDown]) { Position = new Vector2f(-16f, -16f) }, Layer.Player));
+                        slash.GetComponent<LockComponent>().Offset = new Vector2f(0f, 9f);
                         break;
                     case Direction.Left:
-                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashLeft]) { Position = new Vector2f(-34f, -22f) }, Layer.Above));
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashLeft]) { Position = new Vector2f(-16f, -16f) }, Layer.Player));
+                        slash.GetComponent<LockComponent>().Offset = new Vector2f(-18f, -6f);
                         break;
                     case Direction.Right:
-                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashRight]) { Position = new Vector2f(2f, -22f) }, Layer.Above));
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashRight]) { Position = new Vector2f(-16f, -16f) }, Layer.Player));
+                        slash.GetComponent<LockComponent>().Offset = new Vector2f(18f, -6f);
                         break;
                     case Direction.Up:
-                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashUp]) { Position = new Vector2f(-16f, -41f) }, Layer.Below));
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashUp]) { Position = new Vector2f(-16f, -16f) }, Layer.Player));
+                        slash.GetComponent<LockComponent>().Offset = new Vector2f(0f, -25f);
                         break;
                 }
 
+                characterComponent.Power -= 1f / 14f;
                 _slashSound.Play();
                 _slash = false;
             }
@@ -171,6 +178,7 @@ namespace LD39.Systems
                             velocityComponent.Velocity = currentDirection.ToVector() * _dash;
                             _dashDirection = Direction.None;
                             _canDash = false;
+                            characterComponent.Power -= 1f / 21f;
                             _dashSound.Play();
                             return;
                         }
@@ -238,7 +246,6 @@ namespace LD39.Systems
             }
 
             SpriteComponent spriteComponent = entity.GetComponent<SpriteComponent>();
-            CharacterComponent characterComponent = entity.GetComponent<CharacterComponent>();
 
             if (movement.X != 0f || movement.Y != 0f)
             {

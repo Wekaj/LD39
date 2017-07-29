@@ -56,7 +56,8 @@ namespace LD39
 
             _window.SetVerticalSyncEnabled(true);
 
-            _upscaleTexture = new RenderTexture(_window.Size.X / _scale, _window.Size.Y / _scale);
+            _upscaleTexture = new RenderTexture((uint)Math.Ceiling((float)_window.Size.X / _scale),
+                (uint)Math.Ceiling((float)_window.Size.Y / _scale));
             _upscaleSprite = new Sprite(_upscaleTexture.Texture) { Scale = new Vector2f(_scale, _scale) };
 
             _actions = new ActionManager();
@@ -73,6 +74,8 @@ namespace LD39
             _textures.Load(TextureID.SlashLeft, "Resources/slash_left.png");
             _textures.Load(TextureID.SlashRight, "Resources/slash_right.png");
             _textures.Load(TextureID.SlashUp, "Resources/slash_up.png");
+            _textures.Load(TextureID.BatteryBack, "Resources/battery.png");
+            _textures.Load(TextureID.BatteryFill, "Resources/battery_fill.png");
 
             _fonts = new FontLoader();
 

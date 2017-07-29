@@ -16,7 +16,8 @@ namespace LD39.Systems
             PositionComponent positionComponent = entity.GetComponent<PositionComponent>();
             LockComponent lockComponent = entity.GetComponent<LockComponent>();
 
-            positionComponent.Position = lockComponent.Parent.GetComponent<PositionComponent>().Position;
+            positionComponent.Position = lockComponent.Parent.GetComponent<PositionComponent>().Position 
+                + lockComponent.Offset;
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using Artemis;
 using Artemis.Manager;
-using LD39.Animation;
 using LD39.Components;
-using LD39.Input;
 using LD39.Resources;
 using LD39.Systems;
 using LD39.Tiles;
@@ -18,6 +16,8 @@ namespace LD39.Screens.Game
         private readonly TileMap _background, _foreground;
         private readonly EntityWorld _entityWorld;
         private readonly Entity _character;
+        private readonly Sprite _batteryBack, _batteryFill;
+        private float _displayedPower = 1f;
 
         public GameScreen(Context context)
         {
@@ -55,11 +55,25 @@ namespace LD39.Screens.Game
                 TextureRect = new IntRect(0, 0, 16, 32),
                 Position = new Vector2f(-7.5f, -25f)
             }, Layer.Player));
+
+            _batteryBack = new Sprite(_context.Textures[TextureID.BatteryBack]);
+            _batteryBack.Position = new Vector2f(_context.UpscaleTexture.Size.X / 2f - _batteryBack.Texture.Size.X / 2f,
+                _context.UpscaleTexture.Size.Y - 4f - _batteryBack.Texture.Size.Y);
+
+            _batteryFill = new Sprite(_context.Textures[TextureID.BatteryFill]);
+            _batteryFill.Position = _batteryBack.Position + new Vector2f(3f, 3f);
         }
 
         public ScreenChangeRequest Update(Time deltaTime)
         {
             _entityWorld.Update(deltaTime.AsMicroseconds() * 10);
+
+            _displayedPower += (_character.GetComponent<CharacterComponent>().Power - _displayedPower) * 10f * deltaTime.AsSeconds();
+
+            _batteryFill.TextureRect = new IntRect(0, 
+                0, 
+                (int)(_batteryFill.Texture.Size.X * _displayedPower), 
+                (int)_batteryFill.Texture.Size.Y);
 
             return null;
         }
@@ -69,6 +83,9 @@ namespace LD39.Screens.Game
             _entityWorld.SystemManager.GetSystem<DrawSystem>()[0].RenderStates = states;
 
             _entityWorld.Draw();
+
+            target.Draw(_batteryBack, states);
+            target.Draw(_batteryFill, states);
         }
     }
 }
