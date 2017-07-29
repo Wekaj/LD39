@@ -60,7 +60,7 @@ namespace LD39.Screens.Game
             _character.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Character])
             {
                 TextureRect = new IntRect(0, 0, 16, 32),
-                Position = new Vector2f(-7.5f, -25f)
+                Position = new Vector2f(-8f, -25f)
             }, Layer.Player));
 
             _batteryBack = new Sprite(_context.Textures[TextureID.BatteryBack]);

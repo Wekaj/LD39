@@ -1,6 +1,7 @@
 ﻿using Artemis;
 using Artemis.System;
 using LD39.Components;
+using LD39.Extensions;
 using LD39.Tiles;
 using SFML.Graphics;
 using System;
@@ -70,7 +71,7 @@ namespace LD39.Systems
                     SpriteComponent spriteComponent = entity.GetComponent<SpriteComponent>();
 
                     RenderStates states = RenderStates;
-                    states.Transform.Translate(positionComponent.Position);
+                    states.Transform.Translate(positionComponent.Position.Floor());
 
                     _target.Draw(spriteComponent.Sprite, states);
                 }

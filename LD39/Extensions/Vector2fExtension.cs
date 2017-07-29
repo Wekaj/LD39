@@ -16,5 +16,10 @@ namespace LD39.Extensions
                 return vector;
             return vector / vector.GetLength();
         }
+
+        public static Vector2f Floor(this Vector2f vector)
+        {
+            return new Vector2f((float)Math.Floor(vector.X), (float)Math.Floor(vector.Y));
+        }
     }
 }
