@@ -1,4 +1,6 @@
-﻿using SFML.Graphics;
+﻿using LD39.Screens;
+using LD39.Screens.Game;
+using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using System;
@@ -28,13 +30,22 @@ namespace LD39
         }
         #endregion
 
+        private const uint _scale = 2;
         private static readonly Time _timePerFrame = Time.FromSeconds(1f / 60f);
         private readonly RenderWindow _window;
+        private readonly RenderTexture _upscaleTexture;
+        private readonly Sprite _upscaleSprite;
+        private readonly ScreenStack _screens;
 
         public Game()
         {
             _window = new RenderWindow(new VideoMode(1366, 768), "Running out of Power");
             _window.Closed += Window_Closed;
+
+            _upscaleTexture = new RenderTexture(_window.Size.X / _scale, _window.Size.Y / _scale);
+            _upscaleSprite = new Sprite(_upscaleTexture.Texture) { Scale = new Vector2f(_scale, _scale) };
+
+            _screens = new ScreenStack(new GameScreen());
         }
 
         public void Run()
@@ -60,13 +71,17 @@ namespace LD39
 
         private void Update(Time deltaTime)
         {
-
+            _screens.Update(deltaTime);
         }
 
         private void Draw()
         {
-            _window.Clear();
+            _upscaleTexture.Clear();
+            _upscaleTexture.Draw(_screens);
+            _upscaleTexture.Display();
 
+            _window.Clear();
+            _window.Draw(_upscaleSprite);
             _window.Display();
         }
 
