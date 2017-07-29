@@ -1,4 +1,5 @@
 ﻿using Artemis;
+using LD39.Animation;
 using LD39.Components;
 using LD39.Extensions;
 using LD39.Input;
@@ -11,11 +12,15 @@ namespace LD39.Systems
     {
         private const float _speed = 50f;
         private readonly ActionManager _actions;
+        private readonly FixedFrameAnimation _standingDown;
 
         public CharacterMovementSystem(ActionManager actions) 
-            : base(Aspect.All(typeof(CharacterComponent), typeof(VelocityComponent)))
+            : base(Aspect.All(typeof(CharacterComponent), typeof(AnimationComponent), typeof(VelocityComponent)))
         {
             _actions = actions;
+
+            _standingDown = new FixedFrameAnimation(16, 32);
+            _standingDown.AddFrame(0, 0, 1f).AddFrame(1, 0, 0.1f).AddFrame(2, 0, 0.5f).AddFrame(3, 0, 0.1f);
         }
 
         public override void Process(Entity entity)
@@ -35,15 +40,27 @@ namespace LD39.Systems
             velocityComponent.Velocity = movement.Normalize() * _speed;
 
             SpriteComponent spriteComponent = entity.GetComponent<SpriteComponent>();
+            AnimationComponent animationComponent = entity.GetComponent<AnimationComponent>();
 
             if (movement.Y > 0f)
-                spriteComponent.Sprite.TextureRect = new IntRect(0, 0, 16, 32);
+            {
+                animationComponent.Play(_standingDown, Time.FromSeconds(2f), true);
+            }
             else if (movement.Y < 0f)
+            {
                 spriteComponent.Sprite.TextureRect = new IntRect(0, 64, 16, 32);
+                animationComponent.Stop();
+            }
             else if (movement.X > 0f)
+            {
                 spriteComponent.Sprite.TextureRect = new IntRect(0, 32, 16, 32);
+                animationComponent.Stop();
+            }
             else if (movement.X < 0f)
+            {
                 spriteComponent.Sprite.TextureRect = new IntRect(0, 96, 16, 32);
+                animationComponent.Stop();
+            }
         }
     }
 }

@@ -60,6 +60,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Animation\FixedFrameAnimation.cs" />
+    <Compile Include="Animation\IAnimation.cs" />
+    <Compile Include="Components\AnimationComponent.cs" />
     <Compile Include="Components\CharacterComponent.cs" />
     <Compile Include="Components\SpriteComponent.cs" />
     <Compile Include="Components\VelocityComponent.cs" />
@@ -84,6 +87,7 @@
     <Compile Include="Screens\IScreen.cs" />
     <Compile Include="Screens\ScreenChangeRequest.cs" />
     <Compile Include="Screens\ScreenStack.cs" />
+    <Compile Include="Systems\AnimationSystem.cs" />
     <Compile Include="Systems\CharacterMovementSystem.cs" />
     <Compile Include="Systems\DrawSystem.cs" />
     <Compile Include="Systems\EntityUpdatingSystem.cs" />
