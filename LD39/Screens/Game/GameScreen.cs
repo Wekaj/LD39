@@ -18,7 +18,6 @@ namespace LD39.Screens.Game
         private readonly TileMap _background, _foreground;
         private readonly EntityWorld _entityWorld;
         private readonly Entity _character;
-        private readonly FixedFrameAnimation _slashAnimation;
 
         public GameScreen(Context context)
         {
@@ -40,7 +39,7 @@ namespace LD39.Screens.Game
             _foreground = new TileMap(_context.Textures[TextureID.Tiles], 16, new int[backgroundMap.GetLength(0), backgroundMap.GetLength(1)]);
 
             _entityWorld = new EntityWorld();
-            _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new LockSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new AnimationSystem(), GameLoopType.Update);
@@ -56,25 +55,6 @@ namespace LD39.Screens.Game
                 TextureRect = new IntRect(0, 0, 16, 32),
                 Position = new Vector2f(-7.5f, -25f)
             }, Layer.Player));
-
-            _slashAnimation = new FixedFrameAnimation(32, 32);
-            for (int i = 0; i < 15; i++)
-                _slashAnimation.AddFrame(i, 0, 1f);
-
-            _context.Actions[ActionID.Attack].Pressed += Attack_Pressed;
-        }
-
-        private void Attack_Pressed(object sender, EventArgs e)
-        {
-            PositionComponent positionComponent = _character.GetComponent<PositionComponent>();
-
-            Entity slash = _entityWorld.CreateEntity();
-            slash.AddComponent(new PositionComponent(positionComponent.Position));
-            slash.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Slash]) { Position = new Vector2f(-16f, -8f) }, Layer.Effects));
-            slash.AddComponent(new AnimationComponent());
-            slash.AddComponent(new LockComponent(_character));
-            slash.GetComponent<AnimationComponent>().Play(_slashAnimation, Time.FromSeconds(0.5f), false);
-            slash.GetComponent<AnimationComponent>().DestroyAtEnd = true;
         }
 
         public ScreenChangeRequest Update(Time deltaTime)

@@ -69,6 +69,7 @@
     <Compile Include="Components\VelocityComponent.cs" />
     <Compile Include="Components\PositionComponent.cs" />
     <Compile Include="Context.cs" />
+    <Compile Include="Extensions\DirectionExtension.cs" />
     <Compile Include="Extensions\Vector2fExtension.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Input\ActionID.cs" />

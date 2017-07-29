@@ -4,6 +4,9 @@
     {
         Tiles,
         Character,
-        Slash
+        SlashDown,
+        SlashLeft,
+        SlashRight,
+        SlashUp
     }
 }

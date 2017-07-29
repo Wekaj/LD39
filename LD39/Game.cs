@@ -69,7 +69,10 @@ namespace LD39
             _textures = new TextureLoader();
             _textures.Load(TextureID.Tiles, "Resources/tiles.png");
             _textures.Load(TextureID.Character, "Resources/character.png");
-            _textures.Load(TextureID.Slash, "Resources/slash.png");
+            _textures.Load(TextureID.SlashDown, "Resources/slash.png");
+            _textures.Load(TextureID.SlashLeft, "Resources/slash_left.png");
+            _textures.Load(TextureID.SlashRight, "Resources/slash_right.png");
+            _textures.Load(TextureID.SlashUp, "Resources/slash_up.png");
 
             _fonts = new FontLoader();
             _soundBuffers = new SoundBufferLoader();

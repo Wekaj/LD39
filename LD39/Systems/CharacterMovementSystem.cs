@@ -3,6 +3,8 @@ using LD39.Animation;
 using LD39.Components;
 using LD39.Extensions;
 using LD39.Input;
+using LD39.Resources;
+using SFML.Graphics;
 using SFML.System;
 using System;
 
@@ -25,18 +27,23 @@ namespace LD39.Systems
             _walkingDown, _walkingUp, _walkingRight, _walkingLeft,
             _turningDownRight, _turningRightDown, _turningDownLeft, _turningLeftDown,
             _turningUpRight, _turningRightUp, _turningUpLeft, _turningLeftUp;
+        private readonly FixedFrameAnimation _slashAnimation;
+        private readonly TextureLoader _textures;
         private bool _canDash = true;
         private Direction _dashDirection = Direction.None;
+        private bool _slash = false;
 
-        public CharacterMovementSystem(ActionManager actions) 
+        public CharacterMovementSystem(ActionManager actions, TextureLoader textures) 
             : base(Aspect.All(typeof(CharacterComponent), typeof(AnimationComponent), typeof(VelocityComponent)))
         {
             _actions = actions;
+            _textures = textures;
 
             _actions[ActionID.MoveDown].Pressed += MoveDown_Pressed;
             _actions[ActionID.MoveUp].Pressed += MoveUp_Pressed;
             _actions[ActionID.MoveRight].Pressed += MoveRight_Pressed;
             _actions[ActionID.MoveLeft].Pressed += MoveLeft_Pressed;
+            _actions[ActionID.Attack].Pressed += Attack_Pressed;
 
             _standingDown = new FixedFrameAnimation(16, 32).AddFrame(0, 0, 1f).AddFrame(1, 0, 0.1f).AddFrame(2, 0, 0.5f).AddFrame(3, 0, 0.1f);
             _standingUp = new FixedFrameAnimation(16, 32).AddFrame(0, 2, 1f).AddFrame(1, 2, 0.1f).AddFrame(2, 2, 0.5f).AddFrame(3, 2, 0.1f);
@@ -57,6 +64,15 @@ namespace LD39.Systems
             _turningRightUp = new FixedFrameAnimation(16, 32).AddFrame(5, 2, 1f).AddFrame(1, 2, 1f);
             _turningUpLeft = new FixedFrameAnimation(16, 32).AddFrame(4, 3, 1f).AddFrame(5, 3, 1f);
             _turningLeftUp = new FixedFrameAnimation(16, 32).AddFrame(5, 3, 1f).AddFrame(4, 3, 1f);
+
+            _slashAnimation = new FixedFrameAnimation(32, 32);
+            for (int i = 0; i < 15; i++)
+                _slashAnimation.AddFrame(i, 0, 1f);
+        }
+
+        private void Attack_Pressed(object sender, EventArgs e)
+        {
+            _slash = true;
         }
 
         private void MoveLeft_Pressed(object sender, EventArgs e)
@@ -81,13 +97,58 @@ namespace LD39.Systems
 
         public override void Process(Entity entity)
         {
+            // TODO: move this stuff to the screen class, or break it up into multiple systems.
+
+            PositionComponent positionComponent = entity.GetComponent<PositionComponent>();
             AnimationComponent animationComponent = entity.GetComponent<AnimationComponent>();
 
             if (animationComponent.Animation == null)
                 animationComponent.Play(_standingDown, Time.FromSeconds(2f), true, true);
-            
+
+            Direction currentDirection = Direction.None;
+            if (animationComponent.Animation == _standingDown || animationComponent.Animation == _walkingDown
+                || animationComponent.Animation == _turningLeftDown || animationComponent.Animation == _turningRightDown)
+                currentDirection = Direction.Down;
+            else if (animationComponent.Animation == _standingLeft || animationComponent.Animation == _walkingLeft
+                || animationComponent.Animation == _turningDownLeft || animationComponent.Animation == _turningUpLeft)
+                currentDirection = Direction.Left;
+            else if (animationComponent.Animation == _standingUp || animationComponent.Animation == _walkingUp
+                || animationComponent.Animation == _turningLeftUp || animationComponent.Animation == _turningRightUp)
+                currentDirection = Direction.Up;
+            else if (animationComponent.Animation == _standingRight || animationComponent.Animation == _walkingRight
+                || animationComponent.Animation == _turningDownRight || animationComponent.Animation == _turningUpRight)
+                currentDirection = Direction.Right;
+
             VelocityComponent velocityComponent = entity.GetComponent<VelocityComponent>();
             float velocity = velocityComponent.Velocity.GetLength();
+
+            if (_slash)
+            {
+                Entity slash = EntityWorld.CreateEntity();
+                slash.AddComponent(new PositionComponent(positionComponent.Position));
+                slash.AddComponent(new AnimationComponent());
+                slash.AddComponent(new LockComponent(entity));
+                slash.GetComponent<AnimationComponent>().Play(_slashAnimation, Time.FromSeconds(0.5f), false);
+                slash.GetComponent<AnimationComponent>().DestroyAtEnd = true;
+
+                switch (currentDirection)
+                {
+                    case Direction.Down:
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashDown]) { Position = new Vector2f(-16f, -7f) }, Layer.Above));
+                        break;
+                    case Direction.Left:
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashLeft]) { Position = new Vector2f(-34f, -22f) }, Layer.Above));
+                        break;
+                    case Direction.Right:
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashRight]) { Position = new Vector2f(2f, -22f) }, Layer.Above));
+                        break;
+                    case Direction.Up:
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashUp]) { Position = new Vector2f(-16f, -41f) }, Layer.Below));
+                        break;
+                }
+                
+                _slash = false;
+            }
 
             if (animationComponent.Playing)
                 if (animationComponent.Animation == _turningDownRight || animationComponent.Animation == _turningRightDown
@@ -97,33 +158,9 @@ namespace LD39.Systems
                 {
                     if (_dashDirection != Direction.None && _canDash)
                     {
-                        bool dashed = false;
-                        if (_dashDirection == Direction.Right
-                            && (animationComponent.Animation == _turningDownRight || animationComponent.Animation == _turningUpRight))
+                        if (_dashDirection == currentDirection)
                         {
-                            velocityComponent.Velocity = new Vector2f(_dash, 0f);
-                            dashed = true;
-                        }
-                        else if (_dashDirection == Direction.Left
-                            && (animationComponent.Animation == _turningDownLeft || animationComponent.Animation == _turningUpLeft))
-                        {
-                            velocityComponent.Velocity = new Vector2f(-_dash, 0f);
-                            dashed = true;
-                        }
-                        else if (_dashDirection == Direction.Down
-                            && (animationComponent.Animation == _turningLeftDown || animationComponent.Animation == _turningRightDown))
-                        {
-                            velocityComponent.Velocity = new Vector2f(0f, _dash);
-                            dashed = true;
-                        }
-                        else if (_dashDirection == Direction.Up
-                            && (animationComponent.Animation == _turningLeftUp || animationComponent.Animation == _turningRightUp))
-                        {
-                            velocityComponent.Velocity = new Vector2f(0f, -_dash);
-                            dashed = true;
-                        }
-                        if (dashed)
-                        {
+                            velocityComponent.Velocity = currentDirection.ToVector() * _dash;
                             _dashDirection = Direction.None;
                             _canDash = false;
                             return;
@@ -163,20 +200,6 @@ namespace LD39.Systems
                 targetDirection = Direction.Left;
             else if (movement.Y < 0f)
                 targetDirection = Direction.Up;
-
-            Direction currentDirection = Direction.None;
-            if (animationComponent.Animation == _standingDown || animationComponent.Animation == _walkingDown
-                || animationComponent.Animation == _turningLeftDown || animationComponent.Animation == _turningRightDown)
-                currentDirection = Direction.Down;
-            else if (animationComponent.Animation == _standingLeft || animationComponent.Animation == _walkingLeft
-                || animationComponent.Animation == _turningDownLeft || animationComponent.Animation == _turningUpLeft)
-                currentDirection = Direction.Left;
-            else if (animationComponent.Animation == _standingUp || animationComponent.Animation == _walkingUp
-                || animationComponent.Animation == _turningLeftUp || animationComponent.Animation == _turningRightUp)
-                currentDirection = Direction.Up;
-            else if (animationComponent.Animation == _standingRight || animationComponent.Animation == _walkingRight
-                || animationComponent.Animation == _turningDownRight || animationComponent.Animation == _turningUpRight)
-                currentDirection = Direction.Right;
             
             if (targetDirection != Direction.None && targetDirection != currentDirection)
             {
