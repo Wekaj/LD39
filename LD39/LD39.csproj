@@ -58,6 +58,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game.cs" />
+    <Compile Include="Input\ActionID.cs" />
+    <Compile Include="Input\ActionManager.cs" />
+    <Compile Include="Input\IAction.cs" />
+    <Compile Include="Input\KeyboardAction.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Screens\Game\GameScreen.cs" />

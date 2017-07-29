@@ -1,4 +1,5 @@
-﻿using LD39.Screens;
+﻿using LD39.Input;
+using LD39.Screens;
 using LD39.Screens.Game;
 using SFML.Graphics;
 using SFML.System;
@@ -35,6 +36,7 @@ namespace LD39
         private readonly RenderWindow _window;
         private readonly RenderTexture _upscaleTexture;
         private readonly Sprite _upscaleSprite;
+        private readonly ActionManager _actions;
         private readonly ScreenStack _screens;
 
         public Game()
@@ -44,6 +46,8 @@ namespace LD39
 
             _upscaleTexture = new RenderTexture(_window.Size.X / _scale, _window.Size.Y / _scale);
             _upscaleSprite = new Sprite(_upscaleTexture.Texture) { Scale = new Vector2f(_scale, _scale) };
+
+            _actions = new ActionManager();
 
             _screens = new ScreenStack(new GameScreen());
         }
@@ -55,18 +59,24 @@ namespace LD39
 
             while (_window.IsOpen)
             {
-                _window.DispatchEvents();
+                ProcessInput();
                 timeSinceLastUpdate += clock.Restart();
 
                 while (timeSinceLastUpdate > _timePerFrame)
                 {
                     timeSinceLastUpdate -= _timePerFrame;
-                    _window.DispatchEvents();
+                    ProcessInput();
                     Update(_timePerFrame);
                 }
 
                 Draw();
             }
+        }
+
+        private void ProcessInput()
+        {
+            _window.DispatchEvents();
+            _actions.Update();
         }
 
         private void Update(Time deltaTime)
