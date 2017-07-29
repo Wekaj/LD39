@@ -39,7 +39,7 @@ namespace LD39.Screens.Game
             _foreground = new TileMap(_context.Textures[TextureID.Tiles], 16, new int[backgroundMap.GetLength(0), backgroundMap.GetLength(1)]);
 
             _entityWorld = new EntityWorld();
-            _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new LockSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new AnimationSystem(), GameLoopType.Update);

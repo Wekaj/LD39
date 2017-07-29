@@ -4,6 +4,7 @@ using LD39.Components;
 using LD39.Extensions;
 using LD39.Input;
 using LD39.Resources;
+using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using System;
@@ -21,6 +22,8 @@ namespace LD39.Systems
 
     internal sealed class CharacterMovementSystem : EntityUpdatingSystem
     {
+        // TODO: add shield. add power (draw battery). add enemies. add collisions.
+
         private const float _speed = 40f, _acceleration = 200f, _dash = 100f;
         private readonly ActionManager _actions;
         private readonly FixedFrameAnimation _standingDown, _standingUp, _standingRight, _standingLeft,
@@ -29,15 +32,19 @@ namespace LD39.Systems
             _turningUpRight, _turningRightUp, _turningUpLeft, _turningLeftUp;
         private readonly FixedFrameAnimation _slashAnimation;
         private readonly TextureLoader _textures;
+        private readonly Sound _slashSound, _dashSound;
         private bool _canDash = true;
         private Direction _dashDirection = Direction.None;
         private bool _slash = false;
 
-        public CharacterMovementSystem(ActionManager actions, TextureLoader textures) 
+        public CharacterMovementSystem(ActionManager actions, TextureLoader textures, SoundBufferLoader soundBuffers) 
             : base(Aspect.All(typeof(CharacterComponent), typeof(AnimationComponent), typeof(VelocityComponent)))
         {
             _actions = actions;
             _textures = textures;
+
+            _slashSound = new Sound(soundBuffers[SoundBufferID.Slash]);
+            _dashSound = new Sound(soundBuffers[SoundBufferID.Dash]) { Volume = 7f };
 
             _actions[ActionID.MoveDown].Pressed += MoveDown_Pressed;
             _actions[ActionID.MoveUp].Pressed += MoveUp_Pressed;
@@ -146,7 +153,8 @@ namespace LD39.Systems
                         slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashUp]) { Position = new Vector2f(-16f, -41f) }, Layer.Below));
                         break;
                 }
-                
+
+                _slashSound.Play();
                 _slash = false;
             }
 
@@ -163,6 +171,7 @@ namespace LD39.Systems
                             velocityComponent.Velocity = currentDirection.ToVector() * _dash;
                             _dashDirection = Direction.None;
                             _canDash = false;
+                            _dashSound.Play();
                             return;
                         }
                     }

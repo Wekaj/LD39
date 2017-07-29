@@ -75,7 +75,10 @@ namespace LD39
             _textures.Load(TextureID.SlashUp, "Resources/slash_up.png");
 
             _fonts = new FontLoader();
+
             _soundBuffers = new SoundBufferLoader();
+            _soundBuffers.Load(SoundBufferID.Slash, "Resources/slash.wav");
+            _soundBuffers.Load(SoundBufferID.Dash, "Resources/dash.wav");
 
             _context = new Context(_window, _upscaleTexture, _actions, _textures, _fonts, _soundBuffers);
 

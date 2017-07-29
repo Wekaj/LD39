@@ -2,5 +2,7 @@
 {
     internal enum SoundBufferID
     {
+        Slash,
+        Dash
     }
 }
