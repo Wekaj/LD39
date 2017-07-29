@@ -35,11 +35,17 @@ namespace LD39.Screens.Game
                 { 0, 0, 0, 0, 0, 0, 0, 0 },
             };
 
+            bool[,] collisions = new bool[backgroundMap.GetLength(0), backgroundMap.GetLength(1)];
+            for (int y = 0; y < collisions.GetLength(1); y++)
+                for (int x = 0; x < collisions.GetLength(0); x++)
+                    collisions[x, y] = backgroundMap[x, y] == 2;
+
             _background = new TileMap(_context.Textures[TextureID.Tiles], 16, backgroundMap);
             _foreground = new TileMap(_context.Textures[TextureID.Tiles], 16, new int[backgroundMap.GetLength(0), backgroundMap.GetLength(1)]);
 
             _entityWorld = new EntityWorld();
             _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures, _context.SoundBuffers), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new TileCollisionSystem(collisions, 16f), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new LockSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new AnimationSystem(), GameLoopType.Update);
@@ -47,9 +53,10 @@ namespace LD39.Screens.Game
 
             _character = _entityWorld.CreateEntity();
             _character.AddComponent(new CharacterComponent());
-            _character.AddComponent(new PositionComponent());
+            _character.AddComponent(new PositionComponent(96f, 96f));
             _character.AddComponent(new VelocityComponent());
             _character.AddComponent(new AnimationComponent());
+            _character.AddComponent(new TileCollisionComponent(2f));
             _character.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Character])
             {
                 TextureRect = new IntRect(0, 0, 16, 32),
