@@ -45,7 +45,7 @@ namespace LD39.Screens.Game
 
             _entityWorld = new EntityWorld();
             _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures, _context.SoundBuffers), GameLoopType.Update);
-            _entityWorld.SystemManager.SetSystem(new TileCollisionSystem(collisions, 16f), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new TileCollisionSystem(collisions, 16f, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new LockSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new AnimationSystem(), GameLoopType.Update);
@@ -75,7 +75,8 @@ namespace LD39.Screens.Game
         {
             _entityWorld.Update(deltaTime.AsMicroseconds() * 10);
 
-            _displayedPower += (_character.GetComponent<CharacterComponent>().Power - _displayedPower) * 10f * deltaTime.AsSeconds();
+            float power = Math.Max(_character.GetComponent<CharacterComponent>().Power, 0f);
+            _displayedPower += (power - _displayedPower) * 10f * deltaTime.AsSeconds();
 
             _batteryFill.TextureRect = new IntRect(0, 
                 0, 

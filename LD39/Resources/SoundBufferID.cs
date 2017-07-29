@@ -3,6 +3,8 @@
     internal enum SoundBufferID
     {
         Slash,
-        Dash
+        Dash,
+        Thud,
+        Turn
     }
 }

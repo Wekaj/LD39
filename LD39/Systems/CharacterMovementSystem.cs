@@ -32,7 +32,7 @@ namespace LD39.Systems
             _turningUpRight, _turningRightUp, _turningUpLeft, _turningLeftUp;
         private readonly FixedFrameAnimation _slashAnimation;
         private readonly TextureLoader _textures;
-        private readonly Sound _slashSound, _dashSound;
+        private readonly Sound _slashSound, _dashSound, _turnSound;
         private bool _canDash = true;
         private Direction _dashDirection = Direction.None;
         private bool _slash = false;
@@ -45,6 +45,7 @@ namespace LD39.Systems
 
             _slashSound = new Sound(soundBuffers[SoundBufferID.Slash]);
             _dashSound = new Sound(soundBuffers[SoundBufferID.Dash]) { Volume = 7f };
+            _turnSound = new Sound(soundBuffers[SoundBufferID.Turn]) { Volume = 21f };
 
             _actions[ActionID.MoveDown].Pressed += MoveDown_Pressed;
             _actions[ActionID.MoveUp].Pressed += MoveUp_Pressed;
@@ -241,6 +242,7 @@ namespace LD39.Systems
                     turningAnimation = _turningUpRight;
                 else if (currentDirection == Direction.Right && targetDirection == Direction.Up)
                     turningAnimation = _turningRightUp;
+                _turnSound.Play();
                 animationComponent.Play(turningAnimation, Time.FromSeconds(0.25f));
                 return;
             }
