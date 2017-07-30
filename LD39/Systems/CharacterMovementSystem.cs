@@ -24,7 +24,7 @@ namespace LD39.Systems
     {
         // TODO: add shield. add power (draw battery). add enemies. add collisions.
 
-        private const float _speed = 40f, _acceleration = 200f, _dash = 100f, _slashPower = 100f;
+        private const float _speed = 40f, _acceleration = 200f, _dash = 100f, _slashPower = 50f;
         private readonly ActionManager _actions;
         private readonly FixedFrameAnimation _standingDown, _standingUp, _standingRight, _standingLeft,
             _walkingDown, _walkingUp, _walkingRight, _walkingLeft,
@@ -140,6 +140,11 @@ namespace LD39.Systems
 
             CharacterComponent characterComponent = entity.GetComponent<CharacterComponent>();
 
+            if (characterComponent.Cooldown > DeltaTime)
+                characterComponent.Cooldown -= DeltaTime;
+            else
+                characterComponent.Cooldown = Time.Zero;
+
             VelocityComponent velocityComponent = entity.GetComponent<VelocityComponent>();
             float velocity = velocityComponent.Velocity.GetLength();
 
@@ -154,8 +159,10 @@ namespace LD39.Systems
 
                 slash.AddComponent(new LockComponent(entity, new Vector2f()));
 
-                slash.AddComponent(new CollisionComponent(12f, false));
+                slash.AddComponent(new CollisionComponent(11f, false));
                 slash.GetComponent<CollisionComponent>().Ignore = entity;
+                slash.GetComponent<CollisionComponent>().Temporary = true;
+                slash.GetComponent<CollisionComponent>().Timer = Time.FromSeconds(0.3f);
                 slash.GetComponent<CollisionComponent>().Collided += (sender, e) => Slash_Collided(entity, e.Entity, currentDirection, velocity > _speed);
 
                 switch (currentDirection)
@@ -165,16 +172,16 @@ namespace LD39.Systems
                         slash.GetComponent<LockComponent>().Offset = new Vector2f(0f, 9f);
                         break;
                     case Direction.Left:
-                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashLeft]) { Position = new Vector2f(-16f, -16f) }, Layer.Player));
-                        slash.GetComponent<LockComponent>().Offset = new Vector2f(-18f, -6f);
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashLeft]) { Position = new Vector2f(-20f, -16f) }, Layer.Player));
+                        slash.GetComponent<LockComponent>().Offset = new Vector2f(-14f, -6f);
                         break;
                     case Direction.Right:
-                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashRight]) { Position = new Vector2f(-16f, -16f) }, Layer.Player));
-                        slash.GetComponent<LockComponent>().Offset = new Vector2f(18f, -6f);
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashRight]) { Position = new Vector2f(-12f, -16f) }, Layer.Player));
+                        slash.GetComponent<LockComponent>().Offset = new Vector2f(14f, -6f);
                         break;
                     case Direction.Up:
-                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashUp]) { Position = new Vector2f(-16f, -16f) }, Layer.Player));
-                        slash.GetComponent<LockComponent>().Offset = new Vector2f(0f, -25f);
+                        slash.AddComponent(new SpriteComponent(new Sprite(_textures[TextureID.SlashUp]) { Position = new Vector2f(-16f, -26f) }, Layer.Player));
+                        slash.GetComponent<LockComponent>().Offset = new Vector2f(0f, -15f);
                         break;
                 }
 

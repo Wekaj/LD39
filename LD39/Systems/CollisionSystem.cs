@@ -9,6 +9,7 @@ namespace LD39.Systems
     internal sealed class CollisionSystem : EntityUpdatingSystem
     {
         private readonly List<Entity> _entities = new List<Entity>();
+        private readonly HashSet<Entity> _removing = new HashSet<Entity>();
 
         public CollisionSystem() 
             : base(Aspect.All(typeof(PositionComponent), typeof(CollisionComponent)))
@@ -17,6 +18,20 @@ namespace LD39.Systems
 
         public override void Process(Entity entity)
         {
+            CollisionComponent collisionComponent = entity.GetComponent<CollisionComponent>();
+
+            if (collisionComponent.Temporary)
+            {
+                if (collisionComponent.Timer > DeltaTime)
+                    collisionComponent.Timer -= DeltaTime;
+                else
+                {
+                    collisionComponent.Timer = Time.Zero;
+                    _removing.Add(entity);
+                    return;
+                }
+            }
+            
             _entities.Add(entity);
         }
 
@@ -27,7 +42,12 @@ namespace LD39.Systems
             for (int i = 0; i < _entities.Count; i++)
                 for (int j = i + 1; j < _entities.Count; j++)
                     DoCollision(_entities[i], _entities[j]);
+
+            foreach (Entity entity in _removing)
+                entity.RemoveComponent<CollisionComponent>();
+
             _entities.Clear();
+            _removing.Clear();
         }
 
         private void DoCollision(Entity entity1, Entity entity2)

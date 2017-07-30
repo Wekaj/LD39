@@ -65,6 +65,7 @@
     <Compile Include="Components\AnimationComponent.cs" />
     <Compile Include="Components\CharacterComponent.cs" />
     <Compile Include="Components\CollisionComponent.cs" />
+    <Compile Include="Components\DroneComponent.cs" />
     <Compile Include="Components\EntityEventArgs.cs" />
     <Compile Include="Components\FrictionComponent.cs" />
     <Compile Include="Components\HealthComponent.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="Systems\CharacterMovementSystem.cs" />
     <Compile Include="Systems\CollisionSystem.cs" />
     <Compile Include="Systems\DrawSystem.cs" />
+    <Compile Include="Systems\DroneSystem.cs" />
     <Compile Include="Systems\EntityUpdatingSystem.cs" />
     <Compile Include="Systems\FrictionSystem.cs" />
     <Compile Include="Systems\HealthDrawSystem.cs" />

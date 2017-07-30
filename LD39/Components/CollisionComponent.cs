@@ -1,5 +1,6 @@
 ﻿using Artemis;
 using Artemis.Interface;
+using SFML.System;
 using System;
 
 namespace LD39.Components
@@ -17,6 +18,8 @@ namespace LD39.Components
         public float Radius { get; set; }
         public bool Solid { get; set; }
         public Entity Ignore { get; set; }
+        public Time Timer { get; set; }
+        public bool Temporary { get; set; } = false;
 
         public void OnCollided(Entity entity)
         {

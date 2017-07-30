@@ -11,6 +11,8 @@
         BatteryBack,
         BatteryFill,
         HealthBack,
-        HealthFill
+        HealthFill,
+        Drone,
+        Pulse
     }
 }

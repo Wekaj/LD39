@@ -1,5 +1,6 @@
 ﻿using Artemis;
 using Artemis.Manager;
+using LD39.Animation;
 using LD39.Components;
 using LD39.Extensions;
 using LD39.Resources;
@@ -18,6 +19,7 @@ namespace LD39.Screens.Game
         private readonly EntityWorld _entityWorld;
         private readonly Entity _character;
         private readonly Sprite _batteryBack, _batteryFill;
+        private readonly FixedFrameAnimation _droneAnimation;
         private float _displayedPower = 1f;
 
         public GameScreen(Context context)
@@ -26,26 +28,33 @@ namespace LD39.Screens.Game
 
             int[,] backgroundMap = new int[,] 
             {
-                { 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 2, 1, 1, 7, 0, 0, 0 },
-                { 0, 2, 1, 1, 7, 0, 0, 0 },
-                { 0, 0, 2, 1, 7, 0, 0, 0 },
-                { 0, 0, 2, 1, 7, 0, 0, 0 },
-                { 0, 0, 2, 1, 7, 0, 0, 0 },
-                { 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 2, 1, 1, 0, 0, 0, 0, 0, 0 },
+                { 0, 2, 1, 1, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 2, 3, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 2, 1, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 2, 1, 0, 0, 0, 0, 0, 0 },
+                { 0, 2, 1, 1, 1, 4, 1, 1, 0, 0 },
+                { 0, 2, 1, 0, 0, 2, 1, 1, 0, 0 },
+                { 0, 2, 3, 0, 0, 2, 1, 1, 0, 0 },
+                { 2, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+                { 2, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+                { 2, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+                { 2, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
             };
 
             bool[,] collisions = new bool[backgroundMap.GetLength(0), backgroundMap.GetLength(1)];
             for (int y = 0; y < collisions.GetLength(1); y++)
                 for (int x = 0; x < collisions.GetLength(0); x++)
-                    collisions[x, y] = backgroundMap[x, y] > 1;
+                    collisions[x, y] = backgroundMap[x, y] == 2;
 
             _background = new TileMap(_context.Textures[TextureID.Tiles], 16, backgroundMap);
             _foreground = new TileMap(_context.Textures[TextureID.Tiles], 16, new int[backgroundMap.GetLength(0), backgroundMap.GetLength(1)]);
 
             _entityWorld = new EntityWorld();
             _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures, _context.SoundBuffers), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new DroneSystem(_context.Textures), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new CollisionSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new TileCollisionSystem(collisions, 16f, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
@@ -68,6 +77,28 @@ namespace LD39.Screens.Game
                 TextureRect = new IntRect(0, 0, 16, 32),
                 Position = new Vector2f(-8f, -25f)
             }, Layer.Player));
+
+            _droneAnimation = new FixedFrameAnimation(16, 16).AddFrame(0, 0, 1f).AddFrame(1, 0, 0.1f).AddFrame(2, 0, 1f).AddFrame(3, 0, 0.1f);
+
+            Random random = new Random();
+            for (int i = 0; i < 5; i++)
+            {
+                Entity drone = _entityWorld.CreateEntity();
+                drone.AddComponent(new PositionComponent(64f - random.Next(32), 64f - random.Next(32)));
+                drone.AddComponent(new VelocityComponent());
+                drone.AddComponent(new FrictionComponent(10f));
+                drone.AddComponent(new AnimationComponent());
+                drone.GetComponent<AnimationComponent>().Play(_droneAnimation, Time.FromSeconds(2f), true);
+                drone.AddComponent(new TileCollisionComponent(2f));
+                drone.AddComponent(new CollisionComponent(2f));
+                drone.AddComponent(new DroneComponent());
+                drone.AddComponent(new HealthComponent(10, 28f));
+                drone.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Drone])
+                {
+                    TextureRect = new IntRect(0, 0, 16, 16),
+                    Position = new Vector2f(-8f, -16f)
+                }, Layer.Player));
+            }
 
             Entity character2 = _entityWorld.CreateEntity();
             character2.AddComponent(new PositionComponent(128f, 128f));
@@ -94,6 +125,8 @@ namespace LD39.Screens.Game
         public ScreenChangeRequest Update(Time deltaTime)
         {
             _entityWorld.Update(deltaTime.AsMicroseconds() * 10);
+
+            _character.GetComponent<CharacterComponent>().Power = Math.Min(1f, _character.GetComponent<CharacterComponent>().Power);
 
             float power = Math.Max(_character.GetComponent<CharacterComponent>().Power, 0f);
             _displayedPower += (power - _displayedPower) * 10f * deltaTime.AsSeconds();
