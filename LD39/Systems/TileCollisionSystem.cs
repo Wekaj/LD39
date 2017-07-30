@@ -75,15 +75,18 @@ namespace LD39.Systems
                 }
             }
 
-            if (_thudTimer > DeltaTime)
-                _thudTimer -= DeltaTime;
-            else
-                _thudTimer = Time.Zero;
-
-            if (collision && _thudTimer <= Time.Zero)
+            if (entity.HasComponent<CharacterComponent>())
             {
-                _thudSound.Play();
-                _thudTimer += _thudTime;
+                if (_thudTimer > DeltaTime)
+                    _thudTimer -= DeltaTime;
+                else
+                    _thudTimer = Time.Zero;
+
+                if (collision && _thudTimer <= Time.Zero)
+                {
+                    _thudSound.Play();
+                    _thudTimer += _thudTime;
+                }
             }
         }
 

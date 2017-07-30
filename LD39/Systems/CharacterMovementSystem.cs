@@ -24,7 +24,7 @@ namespace LD39.Systems
     {
         // TODO: add shield. add power (draw battery). add enemies. add collisions.
 
-        private const float _speed = 40f, _acceleration = 200f, _dash = 100f, _slashPower = 40f;
+        private const float _speed = 40f, _acceleration = 200f, _dash = 100f, _slashPower = 100f;
         private readonly ActionManager _actions;
         private readonly FixedFrameAnimation _standingDown, _standingUp, _standingRight, _standingLeft,
             _walkingDown, _walkingUp, _walkingRight, _walkingLeft,
@@ -32,10 +32,11 @@ namespace LD39.Systems
             _turningUpRight, _turningRightUp, _turningUpLeft, _turningLeftUp;
         private readonly FixedFrameAnimation _slashAnimation;
         private readonly TextureLoader _textures;
-        private readonly Sound _slashSound, _dashSound, _turnSound;
+        private readonly Sound _slashSound, _megaSlashSound, _dashSound, _turnSound;
         private bool _canDash = true;
         private Direction _dashDirection = Direction.None;
         private bool _slash = false;
+        private Time _slashCooldown = Time.Zero;
 
         public CharacterMovementSystem(ActionManager actions, TextureLoader textures, SoundBufferLoader soundBuffers) 
             : base(Aspect.All(typeof(CharacterComponent), typeof(AnimationComponent), typeof(VelocityComponent)))
@@ -44,6 +45,7 @@ namespace LD39.Systems
             _textures = textures;
 
             _slashSound = new Sound(soundBuffers[SoundBufferID.Slash]);
+            _megaSlashSound = new Sound(soundBuffers[SoundBufferID.MegaSlash]) { Volume = 21f };
             _dashSound = new Sound(soundBuffers[SoundBufferID.Dash]) { Volume = 7f };
             _turnSound = new Sound(soundBuffers[SoundBufferID.Turn]) { Volume = 21f };
 
@@ -80,7 +82,11 @@ namespace LD39.Systems
 
         private void Attack_Pressed(object sender, EventArgs e)
         {
-            _slash = true;
+            if (_slashCooldown <= Time.Zero)
+            {
+                _slash = true;
+                _slashCooldown = Time.FromSeconds(0.6f);
+            }
         }
 
         private void MoveLeft_Pressed(object sender, EventArgs e)
@@ -109,6 +115,11 @@ namespace LD39.Systems
 
             PositionComponent positionComponent = entity.GetComponent<PositionComponent>();
             AnimationComponent animationComponent = entity.GetComponent<AnimationComponent>();
+
+            if (_slashCooldown > DeltaTime)
+                _slashCooldown -= DeltaTime;
+            else
+                _slashCooldown = Time.Zero;
 
             if (animationComponent.Animation == null)
                 animationComponent.Play(_standingDown, Time.FromSeconds(2f), true, true);
@@ -143,9 +154,9 @@ namespace LD39.Systems
 
                 slash.AddComponent(new LockComponent(entity, new Vector2f()));
 
-                slash.AddComponent(new CollisionComponent(8f, false));
+                slash.AddComponent(new CollisionComponent(12f, false));
                 slash.GetComponent<CollisionComponent>().Ignore = entity;
-                slash.GetComponent<CollisionComponent>().Collided += (sender, e) => Slash_Collided(entity, e.Entity, currentDirection);
+                slash.GetComponent<CollisionComponent>().Collided += (sender, e) => Slash_Collided(entity, e.Entity, currentDirection, velocity > _speed);
 
                 switch (currentDirection)
                 {
@@ -168,7 +179,10 @@ namespace LD39.Systems
                 }
 
                 characterComponent.Power -= 1f / 14f;
-                _slashSound.Play();
+                if (velocity > _speed)
+                    _megaSlashSound.Play();
+                else
+                    _slashSound.Play();
                 _slash = false;
             }
 
@@ -299,17 +313,31 @@ namespace LD39.Systems
             characterComponent.LastVelocity = velocityComponent.Velocity;
         }
 
-        private void Slash_Collided(Entity player, Entity entity, Direction slashDirection)
+        private void Slash_Collided(Entity player, Entity entity, Direction slashDirection, bool mega)
         {
-            if (!entity.HasComponent<VelocityComponent>())
+            if (!entity.HasComponent<VelocityComponent>() || !entity.HasComponent<HealthComponent>())
+                return;
+
+            HealthComponent healthComponent = entity.GetComponent<HealthComponent>();
+
+            if (healthComponent.HitTimer > Time.Zero)
                 return;
 
             float power = _slashPower;
-            if (player.GetComponent<VelocityComponent>().Velocity.GetLength() > _speed)
-                power *= 4f;
+            int damage = 2;
+            if (mega)
+            {
+                power *= 2f;
+                damage *= 2;
+            }
+
+            player.GetComponent<CharacterComponent>().Power += mega ? 1f / 21f : 1f / 28f;
 
             VelocityComponent velocityComponent = entity.GetComponent<VelocityComponent>();
             velocityComponent.Velocity += slashDirection.ToVector() * power;
+
+            healthComponent.Health -= damage;
+            healthComponent.HitTimer += Time.FromSeconds(0.6f);
         }
     }
 }

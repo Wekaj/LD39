@@ -1,6 +1,7 @@
 ﻿using Artemis;
 using Artemis.Manager;
 using LD39.Components;
+using LD39.Extensions;
 using LD39.Resources;
 using LD39.Systems;
 using LD39.Tiles;
@@ -26,19 +27,19 @@ namespace LD39.Screens.Game
             int[,] backgroundMap = new int[,] 
             {
                 { 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 2, 2, 2, 2, 0, 0, 0 },
-                { 0, 2, 1, 1, 2, 0, 0, 0 },
-                { 0, 2, 1, 1, 2, 0, 0, 0 },
-                { 0, 2, 2, 1, 2, 0, 0, 0 },
-                { 0, 0, 0, 1, 0, 0, 0, 0 },
-                { 0, 0, 0, 1, 0, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 2, 1, 1, 7, 0, 0, 0 },
+                { 0, 2, 1, 1, 7, 0, 0, 0 },
+                { 0, 0, 2, 1, 7, 0, 0, 0 },
+                { 0, 0, 2, 1, 7, 0, 0, 0 },
+                { 0, 0, 2, 1, 7, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0 },
             };
 
             bool[,] collisions = new bool[backgroundMap.GetLength(0), backgroundMap.GetLength(1)];
             for (int y = 0; y < collisions.GetLength(1); y++)
                 for (int x = 0; x < collisions.GetLength(0); x++)
-                    collisions[x, y] = backgroundMap[x, y] == 2;
+                    collisions[x, y] = backgroundMap[x, y] > 1;
 
             _background = new TileMap(_context.Textures[TextureID.Tiles], 16, backgroundMap);
             _foreground = new TileMap(_context.Textures[TextureID.Tiles], 16, new int[backgroundMap.GetLength(0), backgroundMap.GetLength(1)]);
@@ -51,6 +52,7 @@ namespace LD39.Screens.Game
             _entityWorld.SystemManager.SetSystem(new FrictionSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new LockSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new AnimationSystem(), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new HealthSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new DrawSystem(context.UpscaleTexture, _background, _foreground), GameLoopType.Draw);
             _entityWorld.SystemManager.SetSystem(new HealthDrawSystem(context.UpscaleTexture, context.Textures), GameLoopType.Draw);
 
@@ -73,7 +75,7 @@ namespace LD39.Screens.Game
             character2.AddComponent(new AnimationComponent());
             character2.AddComponent(new TileCollisionComponent(2f));
             character2.AddComponent(new CollisionComponent(4f));
-            character2.AddComponent(new FrictionComponent(1000f));
+            character2.AddComponent(new FrictionComponent(500f));
             character2.AddComponent(new HealthComponent(10, 28f));
             character2.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Character])
             {
@@ -106,10 +108,16 @@ namespace LD39.Screens.Game
 
         public void Draw(RenderTarget target, RenderStates states)
         {
+            View view = _context.UpscaleTexture.GetView();
+            view.Center = _character.GetComponent<PositionComponent>().Position.Floor();
+            _context.UpscaleTexture.SetView(view);
+
             _entityWorld.SystemManager.GetSystem<DrawSystem>()[0].RenderStates = states;
             _entityWorld.SystemManager.GetSystem<HealthDrawSystem>()[0].RenderStates = states;
 
             _entityWorld.Draw();
+
+            _context.UpscaleTexture.SetView(_context.UpscaleTexture.DefaultView);
 
             target.Draw(_batteryBack, states);
             target.Draw(_batteryFill, states);

@@ -5,6 +5,7 @@
         Slash,
         Dash,
         Thud,
-        Turn
+        Turn,
+        MegaSlash
     }
 }

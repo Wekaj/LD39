@@ -28,6 +28,11 @@ namespace LD39.Systems
             PositionComponent positionComponent = entity.GetComponent<PositionComponent>();
             HealthComponent healthComponent = entity.GetComponent<HealthComponent>();
 
+            if (healthComponent.Health <= 0)
+                entity.Delete();
+            if (healthComponent.Health == healthComponent.MaxHealth)
+                return;
+
             _healthBack.Position = (positionComponent.Position - new Vector2f(_healthBack.Texture.Size.X / 2f, healthComponent.Height)).Floor();
             _healthFill.Position = _healthBack.Position + new Vector2f(1f, 1f);
             _healthFill.TextureRect = new IntRect(0, 

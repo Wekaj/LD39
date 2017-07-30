@@ -101,6 +101,7 @@
     <Compile Include="Systems\EntityUpdatingSystem.cs" />
     <Compile Include="Systems\FrictionSystem.cs" />
     <Compile Include="Systems\HealthDrawSystem.cs" />
+    <Compile Include="Systems\HealthSystem.cs" />
     <Compile Include="Systems\LockSystem.cs" />
     <Compile Include="Systems\TileCollisionSystem.cs" />
     <Compile Include="Systems\VelocitySystem.cs" />

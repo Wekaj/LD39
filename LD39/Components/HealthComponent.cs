@@ -1,4 +1,5 @@
 ﻿using Artemis.Interface;
+using SFML.System;
 
 namespace LD39.Components
 {
@@ -14,5 +15,6 @@ namespace LD39.Components
         public int MaxHealth { get; set; }
         public int Health { get; set; }
         public float Height { get; set; }
+        public Time HitTimer { get; set; }
     }
 }

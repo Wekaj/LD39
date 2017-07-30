@@ -83,6 +83,7 @@ namespace LD39
 
             _soundBuffers = new SoundBufferLoader();
             _soundBuffers.Load(SoundBufferID.Slash, "Resources/slash.wav");
+            _soundBuffers.Load(SoundBufferID.MegaSlash, "Resources/mega_slash.wav");
             _soundBuffers.Load(SoundBufferID.Dash, "Resources/dash.wav");
             _soundBuffers.Load(SoundBufferID.Thud, "Resources/thud.wav");
             _soundBuffers.Load(SoundBufferID.Turn, "Resources/turn.wav");
