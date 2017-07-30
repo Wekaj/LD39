@@ -6,6 +6,10 @@
         Dash,
         Thud,
         Turn,
-        MegaSlash
+        MegaSlash,
+        Hit,
+        Damaged,
+        SpikesUp,
+        SpikesDown
     }
 }

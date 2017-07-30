@@ -69,6 +69,8 @@
     <Compile Include="Components\EntityEventArgs.cs" />
     <Compile Include="Components\FrictionComponent.cs" />
     <Compile Include="Components\HealthComponent.cs" />
+    <Compile Include="Components\HitComponent.cs" />
+    <Compile Include="Components\SpikesComponent.cs" />
     <Compile Include="Components\StationComponent.cs" />
     <Compile Include="Components\TileCollisionComponent.cs" />
     <Compile Include="Components\LockComponent.cs" />
@@ -107,6 +109,7 @@
     <Compile Include="Systems\HealthDrawSystem.cs" />
     <Compile Include="Systems\HealthSystem.cs" />
     <Compile Include="Systems\LockSystem.cs" />
+    <Compile Include="Systems\SpikesSystem.cs" />
     <Compile Include="Systems\StationEventArgs.cs" />
     <Compile Include="Systems\StationSystem.cs" />
     <Compile Include="Systems\TileCollisionSystem.cs" />

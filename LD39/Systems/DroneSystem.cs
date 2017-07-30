@@ -3,6 +3,7 @@ using LD39.Animation;
 using LD39.Components;
 using LD39.Extensions;
 using LD39.Resources;
+using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using System.Linq;
@@ -14,15 +15,17 @@ namespace LD39.Systems
         private const float _sightRadius = 64f, _pulseDistance = 20f, _speed = 40f, _acceleration = 200f;
         private readonly Texture _pulseTexture;
         private readonly FixedFrameAnimation _pulseAnimation;
+        private readonly Sound _damagedSound;
         private Entity _character;
 
-        public DroneSystem(TextureLoader textures) 
+        public DroneSystem(TextureLoader textures, SoundBufferLoader soundBuffers) 
             : base(Aspect.All(typeof(PositionComponent), typeof(VelocityComponent), typeof(DroneComponent)))
         {
             _pulseTexture = textures[TextureID.Pulse];
             _pulseAnimation = new FixedFrameAnimation(48, 48);
             for (int i = 0; i < 12; i++)
                 _pulseAnimation.AddFrame(i, 0, 1f);
+            _damagedSound = new Sound(soundBuffers[SoundBufferID.Damaged]);
         }
 
         protected override void Begin()
@@ -76,18 +79,25 @@ namespace LD39.Systems
 
         private void Pulse_Collided(Entity pulse, Entity entity)
         {
+            if (entity.HasComponent<DroneComponent>())
+                return;
             if (!entity.GetComponent<CollisionComponent>().Solid)
                 return;
+            if (!entity.HasComponent<HitComponent>())
+                return;
+
+            HitComponent hitComponent = entity.GetComponent<HitComponent>();
+            if (hitComponent.HitSources.Contains(pulse))
+                return;
+            hitComponent.HitSources.Add(pulse);
 
             if (entity.HasComponent<CharacterComponent>())
             {
                 CharacterComponent characterComponent = entity.GetComponent<CharacterComponent>();
 
-                if (characterComponent.Cooldown > Time.Zero)
-                    return;
-
                 characterComponent.Power -= 1f / 7f;
-                characterComponent.Cooldown = Time.FromSeconds(0.5f);
+
+                _damagedSound.Play();
             }
 
             PositionComponent positionComponent = pulse.GetComponent<PositionComponent>(),

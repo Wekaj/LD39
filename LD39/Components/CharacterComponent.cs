@@ -7,6 +7,5 @@ namespace LD39.Components
     {
         public Vector2f LastVelocity { get; set; }
         public float Power { get; set; } = 1f;
-        public Time Cooldown { get; set; }
     }
 }

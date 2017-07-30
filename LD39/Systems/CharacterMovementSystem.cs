@@ -32,7 +32,7 @@ namespace LD39.Systems
             _turningUpRight, _turningRightUp, _turningUpLeft, _turningLeftUp;
         private readonly FixedFrameAnimation _slashAnimation;
         private readonly TextureLoader _textures;
-        private readonly Sound _slashSound, _megaSlashSound, _dashSound, _turnSound;
+        private readonly Sound _slashSound, _megaSlashSound, _dashSound, _turnSound, _hitSound;
         private bool _canDash = true;
         private Direction _dashDirection = Direction.None;
         private bool _slash = false;
@@ -48,6 +48,7 @@ namespace LD39.Systems
             _megaSlashSound = new Sound(soundBuffers[SoundBufferID.MegaSlash]) { Volume = 21f };
             _dashSound = new Sound(soundBuffers[SoundBufferID.Dash]) { Volume = 7f };
             _turnSound = new Sound(soundBuffers[SoundBufferID.Turn]) { Volume = 21f };
+            _hitSound = new Sound(soundBuffers[SoundBufferID.Hit]);
 
             _actions[ActionID.MoveDown].Pressed += MoveDown_Pressed;
             _actions[ActionID.MoveUp].Pressed += MoveUp_Pressed;
@@ -140,11 +141,6 @@ namespace LD39.Systems
 
             CharacterComponent characterComponent = entity.GetComponent<CharacterComponent>();
 
-            if (characterComponent.Cooldown > DeltaTime)
-                characterComponent.Cooldown -= DeltaTime;
-            else
-                characterComponent.Cooldown = Time.Zero;
-
             VelocityComponent velocityComponent = entity.GetComponent<VelocityComponent>();
             float velocity = velocityComponent.Velocity.GetLength();
 
@@ -163,7 +159,7 @@ namespace LD39.Systems
                 slash.GetComponent<CollisionComponent>().Ignore = entity;
                 slash.GetComponent<CollisionComponent>().Temporary = true;
                 slash.GetComponent<CollisionComponent>().Timer = Time.FromSeconds(0.3f);
-                slash.GetComponent<CollisionComponent>().Collided += (sender, e) => Slash_Collided(entity, e.Entity, currentDirection, velocity > _speed);
+                slash.GetComponent<CollisionComponent>().Collided += (sender, e) => Slash_Collided(entity, slash, e.Entity, currentDirection, velocity > _speed);
 
                 switch (currentDirection)
                 {
@@ -320,15 +316,18 @@ namespace LD39.Systems
             characterComponent.LastVelocity = velocityComponent.Velocity;
         }
 
-        private void Slash_Collided(Entity player, Entity entity, Direction slashDirection, bool mega)
+        private void Slash_Collided(Entity player, Entity slash, Entity entity, Direction slashDirection, bool mega)
         {
-            if (!entity.HasComponent<VelocityComponent>() || !entity.HasComponent<HealthComponent>())
+            if (!entity.HasComponent<VelocityComponent>() || !entity.HasComponent<HealthComponent>() || !entity.HasComponent<HitComponent>())
                 return;
 
-            HealthComponent healthComponent = entity.GetComponent<HealthComponent>();
+            HitComponent hitComponent = entity.GetComponent<HitComponent>();
 
-            if (healthComponent.HitTimer > Time.Zero)
+            if (hitComponent.HitSources.Contains(slash))
                 return;
+            hitComponent.HitSources.Add(slash);
+
+            _hitSound.Play();
 
             float power = _slashPower;
             int damage = 2;
@@ -338,13 +337,11 @@ namespace LD39.Systems
                 damage *= 2;
             }
 
-            player.GetComponent<CharacterComponent>().Power += mega ? 1f / 21f : 1f / 28f;
-
             VelocityComponent velocityComponent = entity.GetComponent<VelocityComponent>();
             velocityComponent.Velocity += slashDirection.ToVector() * power;
 
+            HealthComponent healthComponent = entity.GetComponent<HealthComponent>();
             healthComponent.Health -= damage;
-            healthComponent.HitTimer += Time.FromSeconds(0.6f);
         }
     }
 }

@@ -1,24 +1,30 @@
 ﻿using Artemis;
 using LD39.Components;
-using SFML.System;
+using System.Collections.Generic;
 
 namespace LD39.Systems
 {
-    internal sealed class HealthSystem : EntityUpdatingSystem
+    internal sealed class HitSystem : EntityUpdatingSystem
     {
-        public HealthSystem() 
-            : base(Aspect.All(typeof(HealthComponent)))
+        private readonly List<Entity> _removing = new List<Entity>();
+
+        public HitSystem() 
+            : base(Aspect.All(typeof(HitComponent)))
         {
         }
 
         public override void Process(Entity entity)
         {
-            HealthComponent healthComponent = entity.GetComponent<HealthComponent>();
+            HitComponent hitComponent = entity.GetComponent<HitComponent>();
 
-            if (healthComponent.HitTimer > DeltaTime)
-                healthComponent.HitTimer -= DeltaTime;
-            else
-                healthComponent.HitTimer = Time.Zero;
+            foreach (Entity source in hitComponent.HitSources)
+                if (source.DeletingState)
+                    _removing.Add(source);
+
+            for (int i = 0; i < _removing.Count; i++)
+                hitComponent.HitSources.Remove(_removing[i]);
+
+            _removing.Clear();
         }
     }
 }

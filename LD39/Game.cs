@@ -81,6 +81,7 @@ namespace LD39
             _textures.Load(TextureID.Drone, "Resources/drone.png");
             _textures.Load(TextureID.Pulse, "Resources/pulse.png");
             _textures.Load(TextureID.Station, "Resources/station.png");
+            _textures.Load(TextureID.Spikes, "Resources/spikes.png");
 
             _fonts = new FontLoader();
 
@@ -90,6 +91,10 @@ namespace LD39
             _soundBuffers.Load(SoundBufferID.Dash, "Resources/dash.wav");
             _soundBuffers.Load(SoundBufferID.Thud, "Resources/thud.wav");
             _soundBuffers.Load(SoundBufferID.Turn, "Resources/turn.wav");
+            _soundBuffers.Load(SoundBufferID.Hit, "Resources/hit.wav");
+            _soundBuffers.Load(SoundBufferID.Damaged, "Resources/damaged.wav");
+            _soundBuffers.Load(SoundBufferID.SpikesUp, "Resources/spikes_up.wav");
+            _soundBuffers.Load(SoundBufferID.SpikesDown, "Resources/spikes_down.wav");
 
             _context = new Context(_window, _upscaleTexture, _actions, _textures, _fonts, _soundBuffers);
 

@@ -58,14 +58,15 @@ namespace LD39.Screens.Game
 
             _entityWorld = new EntityWorld();
             _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures, _context.SoundBuffers), GameLoopType.Update);
-            _entityWorld.SystemManager.SetSystem(new DroneSystem(_context.Textures), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new DroneSystem(_context.Textures, _context.SoundBuffers), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new SpikesSystem(16, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new CollisionSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new TileCollisionSystem(collisions, 16f, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new FrictionSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new LockSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new AnimationSystem(), GameLoopType.Update);
-            _entityWorld.SystemManager.SetSystem(new HealthSystem(), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new HitSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new StationSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.GetSystem<StationSystem>()[0].StationTouched += StationSystem_StationTouched;
             _entityWorld.SystemManager.SetSystem(new DrawSystem(context.UpscaleTexture, _background, _foreground), GameLoopType.Draw);
@@ -86,8 +87,22 @@ namespace LD39.Screens.Game
             station.AddComponent(new StationComponent(0));
             station.GetComponent<AnimationComponent>().Play(_stationAnimation, Time.FromSeconds(3f), true);
 
+            station = _entityWorld.CreateEntity();
+            station.AddComponent(new PositionComponent(136f, 112f));
+            station.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Station]) { Position = new Vector2f(-8f, -8f) }, Layer.Floor));
+            station.AddComponent(new AnimationComponent());
+            station.AddComponent(new StationComponent(1));
+            station.GetComponent<AnimationComponent>().Play(_stationAnimation, Time.FromSeconds(3f), true);
+
+            Entity spikes = _entityWorld.CreateEntity();
+            spikes.AddComponent(new PositionComponent());
+            spikes.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Spikes]) { TextureRect = new IntRect(0, 0, 16, 16) }, Layer.Floor));
+            spikes.AddComponent(new SpikesComponent(new Vector2i(5, 3), Time.FromSeconds(4f)));
+            spikes.AddComponent(new AnimationComponent());
+
             _character = _entityWorld.CreateEntity();
             _character.AddComponent(new CharacterComponent());
+            _character.AddComponent(new HitComponent());
             foreach (Entity stationEntity in _entityWorld.EntityManager.GetEntities(Aspect.All(typeof(PositionComponent), typeof(StationComponent))))
             {
                 PositionComponent positionComponent = stationEntity.GetComponent<PositionComponent>();
@@ -117,6 +132,7 @@ namespace LD39.Screens.Game
                 Entity drone = _entityWorld.CreateEntity();
                 drone.AddComponent(new PositionComponent(160f + random.Next(64), 16f + random.Next(48)));
                 drone.AddComponent(new VelocityComponent());
+                drone.AddComponent(new HitComponent());
                 drone.AddComponent(new FrictionComponent(10f));
                 drone.AddComponent(new AnimationComponent());
                 drone.GetComponent<AnimationComponent>().Play(_droneAnimation, Time.FromSeconds(2f), true);
@@ -131,19 +147,19 @@ namespace LD39.Screens.Game
                 }, Layer.Player));
             }
 
-            Entity character2 = _entityWorld.CreateEntity();
-            character2.AddComponent(new PositionComponent(128f, 128f));
-            character2.AddComponent(new VelocityComponent());
-            character2.AddComponent(new AnimationComponent());
-            character2.AddComponent(new TileCollisionComponent(2f));
-            character2.AddComponent(new CollisionComponent(4f));
-            character2.AddComponent(new FrictionComponent(500f));
-            character2.AddComponent(new HealthComponent(10, 28f));
-            character2.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Character])
-            {
-                TextureRect = new IntRect(0, 0, 16, 32),
-                Position = new Vector2f(-8f, -25f)
-            }, Layer.Player));
+            //Entity character2 = _entityWorld.CreateEntity();
+            //character2.AddComponent(new PositionComponent(128f, 128f));
+            //character2.AddComponent(new VelocityComponent());
+            //character2.AddComponent(new AnimationComponent());
+            //character2.AddComponent(new TileCollisionComponent(2f));
+            //character2.AddComponent(new CollisionComponent(4f));
+            //character2.AddComponent(new FrictionComponent(500f));
+            //character2.AddComponent(new HealthComponent(10, 28f));
+            //character2.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Character])
+            //{
+            //    TextureRect = new IntRect(0, 0, 16, 32),
+            //    Position = new Vector2f(-8f, -25f)
+            //}, Layer.Player));
 
             _batteryBack = new Sprite(_context.Textures[TextureID.BatteryBack]);
             _batteryBack.Position = new Vector2f(_context.UpscaleTexture.Size.X / 2f - _batteryBack.Texture.Size.X / 2f,

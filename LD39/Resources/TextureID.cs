@@ -14,6 +14,7 @@
         HealthFill,
         Drone,
         Pulse,
-        Station
+        Station,
+        Spikes
     }
 }
