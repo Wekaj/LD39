@@ -76,6 +76,8 @@ namespace LD39
             _textures.Load(TextureID.SlashUp, "Resources/slash_up.png");
             _textures.Load(TextureID.BatteryBack, "Resources/battery.png");
             _textures.Load(TextureID.BatteryFill, "Resources/battery_fill.png");
+            _textures.Load(TextureID.HealthBack, "Resources/health_back.png");
+            _textures.Load(TextureID.HealthFill, "Resources/health_fill.png");
 
             _fonts = new FontLoader();
 

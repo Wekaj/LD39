@@ -9,6 +9,8 @@
         SlashRight,
         SlashUp,
         BatteryBack,
-        BatteryFill
+        BatteryFill,
+        HealthBack,
+        HealthFill
     }
 }

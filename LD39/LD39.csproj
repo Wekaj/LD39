@@ -64,6 +64,10 @@
     <Compile Include="Animation\IAnimation.cs" />
     <Compile Include="Components\AnimationComponent.cs" />
     <Compile Include="Components\CharacterComponent.cs" />
+    <Compile Include="Components\CollisionComponent.cs" />
+    <Compile Include="Components\EntityEventArgs.cs" />
+    <Compile Include="Components\FrictionComponent.cs" />
+    <Compile Include="Components\HealthComponent.cs" />
     <Compile Include="Components\TileCollisionComponent.cs" />
     <Compile Include="Components\LockComponent.cs" />
     <Compile Include="Components\SpriteComponent.cs" />
@@ -92,8 +96,11 @@
     <Compile Include="Screens\ScreenStack.cs" />
     <Compile Include="Systems\AnimationSystem.cs" />
     <Compile Include="Systems\CharacterMovementSystem.cs" />
+    <Compile Include="Systems\CollisionSystem.cs" />
     <Compile Include="Systems\DrawSystem.cs" />
     <Compile Include="Systems\EntityUpdatingSystem.cs" />
+    <Compile Include="Systems\FrictionSystem.cs" />
+    <Compile Include="Systems\HealthDrawSystem.cs" />
     <Compile Include="Systems\LockSystem.cs" />
     <Compile Include="Systems\TileCollisionSystem.cs" />
     <Compile Include="Systems\VelocitySystem.cs" />

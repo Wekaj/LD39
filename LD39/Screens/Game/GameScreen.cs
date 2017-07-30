@@ -45,11 +45,14 @@ namespace LD39.Screens.Game
 
             _entityWorld = new EntityWorld();
             _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures, _context.SoundBuffers), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new CollisionSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new TileCollisionSystem(collisions, 16f, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new FrictionSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new LockSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new AnimationSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new DrawSystem(context.UpscaleTexture, _background, _foreground), GameLoopType.Draw);
+            _entityWorld.SystemManager.SetSystem(new HealthDrawSystem(context.UpscaleTexture, context.Textures), GameLoopType.Draw);
 
             _character = _entityWorld.CreateEntity();
             _character.AddComponent(new CharacterComponent());
@@ -57,7 +60,22 @@ namespace LD39.Screens.Game
             _character.AddComponent(new VelocityComponent());
             _character.AddComponent(new AnimationComponent());
             _character.AddComponent(new TileCollisionComponent(2f));
+            _character.AddComponent(new CollisionComponent(4f));
             _character.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Character])
+            {
+                TextureRect = new IntRect(0, 0, 16, 32),
+                Position = new Vector2f(-8f, -25f)
+            }, Layer.Player));
+
+            Entity character2 = _entityWorld.CreateEntity();
+            character2.AddComponent(new PositionComponent(128f, 128f));
+            character2.AddComponent(new VelocityComponent());
+            character2.AddComponent(new AnimationComponent());
+            character2.AddComponent(new TileCollisionComponent(2f));
+            character2.AddComponent(new CollisionComponent(4f));
+            character2.AddComponent(new FrictionComponent(1000f));
+            character2.AddComponent(new HealthComponent(10, 28f));
+            character2.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Character])
             {
                 TextureRect = new IntRect(0, 0, 16, 32),
                 Position = new Vector2f(-8f, -25f)
@@ -89,6 +107,7 @@ namespace LD39.Screens.Game
         public void Draw(RenderTarget target, RenderStates states)
         {
             _entityWorld.SystemManager.GetSystem<DrawSystem>()[0].RenderStates = states;
+            _entityWorld.SystemManager.GetSystem<HealthDrawSystem>()[0].RenderStates = states;
 
             _entityWorld.Draw();
 

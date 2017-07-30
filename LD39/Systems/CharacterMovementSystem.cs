@@ -24,7 +24,7 @@ namespace LD39.Systems
     {
         // TODO: add shield. add power (draw battery). add enemies. add collisions.
 
-        private const float _speed = 40f, _acceleration = 200f, _dash = 100f;
+        private const float _speed = 40f, _acceleration = 200f, _dash = 100f, _slashPower = 40f;
         private readonly ActionManager _actions;
         private readonly FixedFrameAnimation _standingDown, _standingUp, _standingRight, _standingLeft,
             _walkingDown, _walkingUp, _walkingRight, _walkingLeft,
@@ -136,10 +136,16 @@ namespace LD39.Systems
             {
                 Entity slash = EntityWorld.CreateEntity();
                 slash.AddComponent(new PositionComponent(positionComponent.Position));
+
                 slash.AddComponent(new AnimationComponent());
-                slash.AddComponent(new LockComponent(entity, new Vector2f()));
                 slash.GetComponent<AnimationComponent>().Play(_slashAnimation, Time.FromSeconds(0.5f), false);
                 slash.GetComponent<AnimationComponent>().DestroyAtEnd = true;
+
+                slash.AddComponent(new LockComponent(entity, new Vector2f()));
+
+                slash.AddComponent(new CollisionComponent(8f, false));
+                slash.GetComponent<CollisionComponent>().Ignore = entity;
+                slash.GetComponent<CollisionComponent>().Collided += (sender, e) => Slash_Collided(entity, e.Entity, currentDirection);
 
                 switch (currentDirection)
                 {
@@ -291,6 +297,19 @@ namespace LD39.Systems
             }
 
             characterComponent.LastVelocity = velocityComponent.Velocity;
+        }
+
+        private void Slash_Collided(Entity player, Entity entity, Direction slashDirection)
+        {
+            if (!entity.HasComponent<VelocityComponent>())
+                return;
+
+            float power = _slashPower;
+            if (player.GetComponent<VelocityComponent>().Velocity.GetLength() > _speed)
+                power *= 4f;
+
+            VelocityComponent velocityComponent = entity.GetComponent<VelocityComponent>();
+            velocityComponent.Velocity += slashDirection.ToVector() * power;
         }
     }
 }
