@@ -11,9 +11,10 @@ namespace LD39.Systems
 {
     internal enum Layer
     {
+        Floor,
         Below,
         Player,
-        Above
+        Above,
     }
 
     internal sealed class DrawSystem : EntityProcessingSystem

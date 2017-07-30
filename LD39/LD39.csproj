@@ -69,6 +69,7 @@
     <Compile Include="Components\EntityEventArgs.cs" />
     <Compile Include="Components\FrictionComponent.cs" />
     <Compile Include="Components\HealthComponent.cs" />
+    <Compile Include="Components\StationComponent.cs" />
     <Compile Include="Components\TileCollisionComponent.cs" />
     <Compile Include="Components\LockComponent.cs" />
     <Compile Include="Components\SpriteComponent.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Resources\TextureLoader.cs" />
     <Compile Include="Screens\Game\GameScreen.cs" />
     <Compile Include="Screens\IScreen.cs" />
+    <Compile Include="Screens\Recharge\RechargeScreen.cs" />
     <Compile Include="Screens\ScreenChangeRequest.cs" />
     <Compile Include="Screens\ScreenStack.cs" />
     <Compile Include="Systems\AnimationSystem.cs" />
@@ -105,6 +107,8 @@
     <Compile Include="Systems\HealthDrawSystem.cs" />
     <Compile Include="Systems\HealthSystem.cs" />
     <Compile Include="Systems\LockSystem.cs" />
+    <Compile Include="Systems\StationEventArgs.cs" />
+    <Compile Include="Systems\StationSystem.cs" />
     <Compile Include="Systems\TileCollisionSystem.cs" />
     <Compile Include="Systems\VelocitySystem.cs" />
     <Compile Include="Tiles\TileMap.cs" />

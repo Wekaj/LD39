@@ -13,6 +13,7 @@
         HealthBack,
         HealthFill,
         Drone,
-        Pulse
+        Pulse,
+        Station
     }
 }

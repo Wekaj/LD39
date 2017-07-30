@@ -95,7 +95,10 @@ namespace LD39.Systems
 
             VelocityComponent entityVelocityComponent = entity.GetComponent<VelocityComponent>();
 
-            entityVelocityComponent.Velocity += (entityPositionComponent.Position - positionComponent.Position) * 5f;
+            Vector2f difference = entityPositionComponent.Position - positionComponent.Position;
+            float distance = difference.GetLength();
+
+            entityVelocityComponent.Velocity += (difference.Normalize() * (28f - distance)) * 5f;
         }
     }
 }

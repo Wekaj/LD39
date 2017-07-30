@@ -27,6 +27,10 @@ namespace LD39.Screens
                     case ScreenChangeRequestType.Push:
                         _screens.Push(request.Screen);
                         break;
+                    case ScreenChangeRequestType.Replace:
+                        _screens.Pop();
+                        _screens.Push(request.Screen);
+                        break;
                 }
             }
         }

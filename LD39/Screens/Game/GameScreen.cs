@@ -4,6 +4,7 @@ using LD39.Animation;
 using LD39.Components;
 using LD39.Extensions;
 using LD39.Resources;
+using LD39.Screens.Recharge;
 using LD39.Systems;
 using LD39.Tiles;
 using SFML.Graphics;
@@ -19,12 +20,15 @@ namespace LD39.Screens.Game
         private readonly EntityWorld _entityWorld;
         private readonly Entity _character;
         private readonly Sprite _batteryBack, _batteryFill;
-        private readonly FixedFrameAnimation _droneAnimation;
+        private readonly FixedFrameAnimation _droneAnimation, _stationAnimation;
+        private readonly int _station;
         private float _displayedPower = 1f;
+        private int _rechargeStation = -1;
 
-        public GameScreen(Context context)
+        public GameScreen(Context context, int stationID)
         {
             _context = context;
+            _station = stationID;
 
             int[,] backgroundMap = new int[,] 
             {
@@ -62,12 +66,39 @@ namespace LD39.Screens.Game
             _entityWorld.SystemManager.SetSystem(new LockSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new AnimationSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new HealthSystem(), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new StationSystem(), GameLoopType.Update);
+            _entityWorld.SystemManager.GetSystem<StationSystem>()[0].StationTouched += StationSystem_StationTouched;
             _entityWorld.SystemManager.SetSystem(new DrawSystem(context.UpscaleTexture, _background, _foreground), GameLoopType.Draw);
             _entityWorld.SystemManager.SetSystem(new HealthDrawSystem(context.UpscaleTexture, context.Textures), GameLoopType.Draw);
 
+            _stationAnimation = new FixedFrameAnimation(16, 16);
+            _stationAnimation.AddFrame(0, 0, 1f);
+            for (int i = 1; i < 6; i++)
+                _stationAnimation.AddFrame(i, 0, 0.05f);
+            _stationAnimation.AddFrame(6, 0, 1f);
+            for (int i = 7; i < 12; i++)
+                _stationAnimation.AddFrame(i, 0, 0.05f);
+
+            Entity station = _entityWorld.CreateEntity();
+            station.AddComponent(new PositionComponent(48f, 48f));
+            station.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Station]) { Position = new Vector2f(-8f, -8f) }, Layer.Floor));
+            station.AddComponent(new AnimationComponent());
+            station.AddComponent(new StationComponent(0));
+            station.GetComponent<AnimationComponent>().Play(_stationAnimation, Time.FromSeconds(3f), true);
+
             _character = _entityWorld.CreateEntity();
             _character.AddComponent(new CharacterComponent());
-            _character.AddComponent(new PositionComponent(96f, 96f));
+            foreach (Entity stationEntity in _entityWorld.EntityManager.GetEntities(Aspect.All(typeof(PositionComponent), typeof(StationComponent))))
+            {
+                PositionComponent positionComponent = stationEntity.GetComponent<PositionComponent>();
+                StationComponent stationComponent = stationEntity.GetComponent<StationComponent>();
+
+                if (stationComponent.ID == stationID)
+                {
+                    _character.AddComponent(new PositionComponent(positionComponent.Position));
+                    break;
+                }
+            }
             _character.AddComponent(new VelocityComponent());
             _character.AddComponent(new AnimationComponent());
             _character.AddComponent(new TileCollisionComponent(2f));
@@ -84,7 +115,7 @@ namespace LD39.Screens.Game
             for (int i = 0; i < 5; i++)
             {
                 Entity drone = _entityWorld.CreateEntity();
-                drone.AddComponent(new PositionComponent(64f - random.Next(32), 64f - random.Next(32)));
+                drone.AddComponent(new PositionComponent(160f + random.Next(64), 16f + random.Next(48)));
                 drone.AddComponent(new VelocityComponent());
                 drone.AddComponent(new FrictionComponent(10f));
                 drone.AddComponent(new AnimationComponent());
@@ -120,15 +151,30 @@ namespace LD39.Screens.Game
 
             _batteryFill = new Sprite(_context.Textures[TextureID.BatteryFill]);
             _batteryFill.Position = _batteryBack.Position + new Vector2f(3f, 3f);
+
+            _entityWorld.Update(0);
+        }
+
+        private void StationSystem_StationTouched(object sender, StationEventArgs e)
+        {
+            _rechargeStation = e.ID;
         }
 
         public ScreenChangeRequest Update(Time deltaTime)
         {
             _entityWorld.Update(deltaTime.AsMicroseconds() * 10);
 
-            _character.GetComponent<CharacterComponent>().Power = Math.Min(1f, _character.GetComponent<CharacterComponent>().Power);
+            if (_rechargeStation >= 0)
+                return ScreenChangeRequest.Replace(new RechargeScreen(_context, _rechargeStation));
 
-            float power = Math.Max(_character.GetComponent<CharacterComponent>().Power, 0f);
+            CharacterComponent characterComponent = _character.GetComponent<CharacterComponent>();
+
+            if (characterComponent.Power <= 0f)
+                return ScreenChangeRequest.Replace(new RechargeScreen(_context, _station));
+
+            characterComponent.Power = Math.Min(1f, characterComponent.Power);
+
+            float power = Math.Max(characterComponent.Power, 0f);
             _displayedPower += (power - _displayedPower) * 10f * deltaTime.AsSeconds();
 
             _batteryFill.TextureRect = new IntRect(0, 

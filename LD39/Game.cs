@@ -47,7 +47,7 @@ namespace LD39
         public static readonly Color Shade0 = new Color(15, 56, 15);
         public static readonly Color Shade1 = new Color(48, 98, 48);
         public static readonly Color Shade2 = new Color(139, 172, 15);
-        public static readonly Color Shade3 = new Color(155, 188, 15);
+        public static readonly Color Shade3 = new Color(172, 213, 37);
 
         public Game()
         {
@@ -80,6 +80,7 @@ namespace LD39
             _textures.Load(TextureID.HealthFill, "Resources/health_fill.png");
             _textures.Load(TextureID.Drone, "Resources/drone.png");
             _textures.Load(TextureID.Pulse, "Resources/pulse.png");
+            _textures.Load(TextureID.Station, "Resources/station.png");
 
             _fonts = new FontLoader();
 
@@ -92,7 +93,7 @@ namespace LD39
 
             _context = new Context(_window, _upscaleTexture, _actions, _textures, _fonts, _soundBuffers);
 
-            _screens = new ScreenStack(new GameScreen(_context));
+            _screens = new ScreenStack(new GameScreen(_context, 0));
         }
 
         public void Run()

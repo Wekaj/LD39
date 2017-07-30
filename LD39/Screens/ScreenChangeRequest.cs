@@ -3,7 +3,8 @@
     public enum ScreenChangeRequestType
     {
         Pop,
-        Push
+        Push,
+        Replace
     }
 
     internal sealed class ScreenChangeRequest
@@ -25,6 +26,11 @@
         public static ScreenChangeRequest Push(IScreen screen)
         {
             return new ScreenChangeRequest(ScreenChangeRequestType.Push, screen);
+        }
+
+        public static ScreenChangeRequest Replace(IScreen screen)
+        {
+            return new ScreenChangeRequest(ScreenChangeRequestType.Replace, screen);
         }
     }
 }
