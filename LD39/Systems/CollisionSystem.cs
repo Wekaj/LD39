@@ -70,8 +70,10 @@ namespace LD39.Systems
 
                 if (collisionComponent1.Solid && collisionComponent2.Solid)
                 {
-                    positionComponent1.Position = position2 + difference.Normalize() * (collisionComponent1.Radius + collisionComponent2.Radius);
-                    positionComponent2.Position = position1 + -difference.Normalize() * (collisionComponent1.Radius + collisionComponent2.Radius);
+                    if (!entity1.HasComponent<CharacterComponent>())
+                        positionComponent1.Position = position2 + difference.Normalize() * (collisionComponent1.Radius + collisionComponent2.Radius);
+                    if (!entity2.HasComponent<CharacterComponent>())
+                        positionComponent2.Position = position1 + -difference.Normalize() * (collisionComponent1.Radius + collisionComponent2.Radius);
                 }
 
                 collisionComponent1.OnCollided(entity2);

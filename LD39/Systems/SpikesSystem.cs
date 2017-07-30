@@ -13,7 +13,7 @@ namespace LD39.Systems
     internal sealed class SpikesSystem : EntityUpdatingSystem
     {
         private readonly Time _spikeTime = Time.FromSeconds(2f);
-        private readonly float _soundDistance = 128f;
+        private readonly float _soundDistance = 160f;
         private readonly int _tileSize;
         private readonly FixedFrameAnimation _extendAnimation, _retractAnimation;
         private readonly Sound _spikesUp, _spikesDown;
@@ -60,13 +60,15 @@ namespace LD39.Systems
                 {
                     animationComponent.Play(_extendAnimation, Time.FromSeconds(0.1f));
                     _spikesUp.Volume = 21f * Math.Max(_soundDistance - distance, 0f) / _soundDistance;
-                    _spikesUp.Play();
+                    if (_spikesUp.Volume > 0f)
+                        _spikesUp.Play();
                 }
                 else
                 {
                     animationComponent.Play(_retractAnimation, Time.FromSeconds(0.1f));
                     _spikesDown.Volume = 21f * Math.Max(_soundDistance - distance, 0f) / _soundDistance;
-                    _spikesDown.Play();
+                    if (_spikesDown.Volume > 0f)
+                        _spikesDown.Play();
                 }
             }
 

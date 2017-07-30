@@ -10,6 +10,7 @@ using LD39.Tiles;
 using SFML.Graphics;
 using SFML.System;
 using System;
+using TiledSharp;
 
 namespace LD39.Screens.Game
 {
@@ -30,28 +31,17 @@ namespace LD39.Screens.Game
             _context = context;
             _station = stationID;
 
-            int[,] backgroundMap = new int[,] 
-            {
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 2, 1, 1, 0, 0, 0, 0, 0, 0 },
-                { 0, 2, 1, 1, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 2, 3, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 2, 1, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 2, 1, 0, 0, 0, 0, 0, 0 },
-                { 0, 2, 1, 1, 1, 4, 1, 1, 0, 0 },
-                { 0, 2, 1, 0, 0, 2, 1, 1, 0, 0 },
-                { 0, 2, 3, 0, 0, 2, 1, 1, 0, 0 },
-                { 2, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
-                { 2, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
-                { 2, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
-                { 2, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
-            };
+            TmxMap map = new TmxMap("Resources/map.tmx");
+
+            int[,] backgroundMap = new int[map.Width, map.Height];
+            for (int y = 0; y < map.Height; y++)
+                for (int x = 0; x < map.Width; x++)
+                    backgroundMap[x, y] = map.Layers[0].Tiles[x + y * map.Width].Gid - 1;
 
             bool[,] collisions = new bool[backgroundMap.GetLength(0), backgroundMap.GetLength(1)];
             for (int y = 0; y < collisions.GetLength(1); y++)
                 for (int x = 0; x < collisions.GetLength(0); x++)
-                    collisions[x, y] = backgroundMap[x, y] == 2;
+                    collisions[x, y] = backgroundMap[x, y] != 1;
 
             _background = new TileMap(_context.Textures[TextureID.Tiles], 16, backgroundMap);
             _foreground = new TileMap(_context.Textures[TextureID.Tiles], 16, new int[backgroundMap.GetLength(0), backgroundMap.GetLength(1)]);
@@ -60,6 +50,7 @@ namespace LD39.Screens.Game
             _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new DroneSystem(_context.Textures, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new SpikesSystem(16, _context.SoundBuffers), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new MissileLauncherSystem(_context.Textures), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new CollisionSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new TileCollisionSystem(collisions, 16f, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
@@ -80,25 +71,60 @@ namespace LD39.Screens.Game
             for (int i = 7; i < 12; i++)
                 _stationAnimation.AddFrame(i, 0, 0.05f);
 
-            Entity station = _entityWorld.CreateEntity();
-            station.AddComponent(new PositionComponent(48f, 48f));
-            station.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Station]) { Position = new Vector2f(-8f, -8f) }, Layer.Floor));
-            station.AddComponent(new AnimationComponent());
-            station.AddComponent(new StationComponent(0));
-            station.GetComponent<AnimationComponent>().Play(_stationAnimation, Time.FromSeconds(3f), true);
+            _droneAnimation = new FixedFrameAnimation(16, 16).AddFrame(0, 0, 1f).AddFrame(1, 0, 0.1f).AddFrame(2, 0, 1f).AddFrame(3, 0, 0.1f);
 
-            station = _entityWorld.CreateEntity();
-            station.AddComponent(new PositionComponent(136f, 112f));
-            station.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Station]) { Position = new Vector2f(-8f, -8f) }, Layer.Floor));
-            station.AddComponent(new AnimationComponent());
-            station.AddComponent(new StationComponent(1));
-            station.GetComponent<AnimationComponent>().Play(_stationAnimation, Time.FromSeconds(3f), true);
+            foreach (TmxObject obj in map.ObjectGroups[0].Objects)
+            {
+                if (obj.Properties.ContainsKey("Station"))
+                {
+                    int id = int.Parse(obj.Properties["Station"]);
 
-            Entity spikes = _entityWorld.CreateEntity();
-            spikes.AddComponent(new PositionComponent());
-            spikes.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Spikes]) { TextureRect = new IntRect(0, 0, 16, 16) }, Layer.Floor));
-            spikes.AddComponent(new SpikesComponent(new Vector2i(5, 3), Time.FromSeconds(4f)));
-            spikes.AddComponent(new AnimationComponent());
+                    Entity station = _entityWorld.CreateEntity();
+                    station.AddComponent(new PositionComponent((float)obj.X + (float)obj.Width / 2f, (float)obj.Y + (float)obj.Height / 2f));
+                    station.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Station]) { Position = new Vector2f(-8f, -8f) }, Layer.Floor));
+                    station.AddComponent(new AnimationComponent());
+                    station.AddComponent(new StationComponent(id));
+                    station.GetComponent<AnimationComponent>().Play(_stationAnimation, Time.FromSeconds(3f), true);
+                }
+                else if (obj.Properties.ContainsKey("Spikes"))
+                {
+                    Time timer = Time.FromSeconds(float.Parse(obj.Properties["Spikes"]));
+
+                    Entity spikes = _entityWorld.CreateEntity();
+                    spikes.AddComponent(new PositionComponent());
+                    spikes.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Spikes]) { TextureRect = new IntRect(0, 0, 16, 16) }, Layer.Floor));
+                    spikes.AddComponent(new SpikesComponent(new Vector2i((int)(obj.X / 16f), (int)(obj.Y / 16f)), timer));
+                    spikes.AddComponent(new AnimationComponent());
+                }
+                else if (obj.Properties.ContainsKey("Launcher"))
+                {
+                    Time timer = Time.FromSeconds(float.Parse(obj.Properties["Launcher"]));
+
+                    Entity launcher = _entityWorld.CreateEntity();
+                    launcher.AddComponent(new PositionComponent((float)obj.X + (float)obj.Width / 2f, (float)obj.Y + (float)obj.Height / 2f));
+                    launcher.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.MissileLauncher]) { TextureRect = new IntRect(0, 0, 16, 16), Position = new Vector2f(-8f, -8f) }, Layer.Floor));
+                    launcher.AddComponent(new MissileLauncherComponent(timer));
+                }
+                else if (obj.Properties.ContainsKey("Drone"))
+                {
+                    Entity drone = _entityWorld.CreateEntity();
+                    drone.AddComponent(new PositionComponent((float)obj.X + (float)obj.Width / 2f, (float)obj.Y + (float)obj.Height / 2f));
+                    drone.AddComponent(new VelocityComponent());
+                    drone.AddComponent(new HitComponent());
+                    drone.AddComponent(new FrictionComponent(10f));
+                    drone.AddComponent(new AnimationComponent());
+                    drone.GetComponent<AnimationComponent>().Play(_droneAnimation, Time.FromSeconds(2f), true);
+                    drone.AddComponent(new TileCollisionComponent(2f));
+                    drone.AddComponent(new CollisionComponent(2f));
+                    drone.AddComponent(new DroneComponent());
+                    drone.AddComponent(new HealthComponent(6, 28f));
+                    drone.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Drone])
+                    {
+                        TextureRect = new IntRect(0, 0, 16, 16),
+                        Position = new Vector2f(-8f, -16f)
+                    }, Layer.Player));
+                }
+            }
 
             _character = _entityWorld.CreateEntity();
             _character.AddComponent(new CharacterComponent());
@@ -123,29 +149,6 @@ namespace LD39.Screens.Game
                 TextureRect = new IntRect(0, 0, 16, 32),
                 Position = new Vector2f(-8f, -25f)
             }, Layer.Player));
-
-            _droneAnimation = new FixedFrameAnimation(16, 16).AddFrame(0, 0, 1f).AddFrame(1, 0, 0.1f).AddFrame(2, 0, 1f).AddFrame(3, 0, 0.1f);
-
-            Random random = new Random();
-            for (int i = 0; i < 5; i++)
-            {
-                Entity drone = _entityWorld.CreateEntity();
-                drone.AddComponent(new PositionComponent(160f + random.Next(64), 16f + random.Next(48)));
-                drone.AddComponent(new VelocityComponent());
-                drone.AddComponent(new HitComponent());
-                drone.AddComponent(new FrictionComponent(10f));
-                drone.AddComponent(new AnimationComponent());
-                drone.GetComponent<AnimationComponent>().Play(_droneAnimation, Time.FromSeconds(2f), true);
-                drone.AddComponent(new TileCollisionComponent(2f));
-                drone.AddComponent(new CollisionComponent(2f));
-                drone.AddComponent(new DroneComponent());
-                drone.AddComponent(new HealthComponent(10, 28f));
-                drone.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Drone])
-                {
-                    TextureRect = new IntRect(0, 0, 16, 16),
-                    Position = new Vector2f(-8f, -16f)
-                }, Layer.Player));
-            }
 
             //Entity character2 = _entityWorld.CreateEntity();
             //character2.AddComponent(new PositionComponent(128f, 128f));

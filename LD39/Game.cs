@@ -82,6 +82,8 @@ namespace LD39
             _textures.Load(TextureID.Pulse, "Resources/pulse.png");
             _textures.Load(TextureID.Station, "Resources/station.png");
             _textures.Load(TextureID.Spikes, "Resources/spikes.png");
+            _textures.Load(TextureID.Missile, "Resources/missile.png");
+            _textures.Load(TextureID.MissileLauncher, "Resources/missile_launcher.png");
 
             _fonts = new FontLoader();
 
@@ -98,7 +100,7 @@ namespace LD39
 
             _context = new Context(_window, _upscaleTexture, _actions, _textures, _fonts, _soundBuffers);
 
-            _screens = new ScreenStack(new GameScreen(_context, 0));
+            _screens = new ScreenStack(new GameScreen(_context, 1));
         }
 
         public void Run()

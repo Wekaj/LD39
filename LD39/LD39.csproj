@@ -58,6 +58,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="TiledSharp, Version=0.15.5889.20321, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TiledSharp.0.15\lib\TiledSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Animation\FixedFrameAnimation.cs" />
@@ -70,6 +73,8 @@
     <Compile Include="Components\FrictionComponent.cs" />
     <Compile Include="Components\HealthComponent.cs" />
     <Compile Include="Components\HitComponent.cs" />
+    <Compile Include="Components\MissileComponent.cs" />
+    <Compile Include="Components\MissileLauncherComponent.cs" />
     <Compile Include="Components\SpikesComponent.cs" />
     <Compile Include="Components\StationComponent.cs" />
     <Compile Include="Components\TileCollisionComponent.cs" />
@@ -109,6 +114,7 @@
     <Compile Include="Systems\HealthDrawSystem.cs" />
     <Compile Include="Systems\HealthSystem.cs" />
     <Compile Include="Systems\LockSystem.cs" />
+    <Compile Include="Systems\MissileLauncherSystem.cs" />
     <Compile Include="Systems\SpikesSystem.cs" />
     <Compile Include="Systems\StationEventArgs.cs" />
     <Compile Include="Systems\StationSystem.cs" />

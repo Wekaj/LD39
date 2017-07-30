@@ -18,9 +18,13 @@ namespace LD39.Tiles
             for (uint y = 0; y < height; y++)
                 for (uint x = 0; x < width; x++)
                 {
+                    int i = 0;
+                    if (map[x, y] > 5)
+                        i = map[x, y];
+
                     uint startIndex = (x + y * width) * 4;
-                    uint tileX = (uint)map[x, y] % width;
-                    uint tileY = (uint)map[x, y] / width;
+                    uint tileX = (uint)map[x, y] % 8;
+                    uint tileY = (uint)map[x, y] / 8;
                     _vertices[startIndex] = new Vertex(new Vector2f(x, y) * tileSize, 
                         new Vector2f(tileX, tileY) * tileSize);
                     _vertices[startIndex + 1] = new Vertex(new Vector2f(x + 1f, y) * tileSize, 

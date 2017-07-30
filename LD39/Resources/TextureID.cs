@@ -15,6 +15,8 @@
         Drone,
         Pulse,
         Station,
-        Spikes
+        Spikes,
+        Missile,
+        MissileLauncher
     }
 }
