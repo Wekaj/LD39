@@ -73,7 +73,6 @@
     <Compile Include="Components\FrictionComponent.cs" />
     <Compile Include="Components\HealthComponent.cs" />
     <Compile Include="Components\HitComponent.cs" />
-    <Compile Include="Components\MissileComponent.cs" />
     <Compile Include="Components\MissileLauncherComponent.cs" />
     <Compile Include="Components\SpikesComponent.cs" />
     <Compile Include="Components\StationComponent.cs" />
@@ -90,6 +89,7 @@
     <Compile Include="Input\ActionManager.cs" />
     <Compile Include="Input\IAction.cs" />
     <Compile Include="Input\KeyboardAction.cs" />
+    <Compile Include="PlayerData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\FontID.cs" />
@@ -99,8 +99,10 @@
     <Compile Include="Resources\SoundBufferLoader.cs" />
     <Compile Include="Resources\TextureID.cs" />
     <Compile Include="Resources\TextureLoader.cs" />
+    <Compile Include="Screens\End\EndScreen.cs" />
     <Compile Include="Screens\Game\GameScreen.cs" />
     <Compile Include="Screens\IScreen.cs" />
+    <Compile Include="Screens\Menu\MenuScreen.cs" />
     <Compile Include="Screens\Recharge\RechargeScreen.cs" />
     <Compile Include="Screens\ScreenChangeRequest.cs" />
     <Compile Include="Screens\ScreenStack.cs" />

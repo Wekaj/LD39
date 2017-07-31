@@ -10,13 +10,13 @@ namespace LD39.Screens.Recharge
     {
         private readonly Context _context;
         private readonly Time _time = Time.FromSeconds(0.5f);
-        private readonly int _stationID;
+        private readonly PlayerData _playerData;
         private Time _timer;
 
-        public RechargeScreen(Context context, int stationID)
+        public RechargeScreen(Context context, PlayerData playerData)
         {
             _context = context;
-            _stationID = stationID;
+            _playerData = playerData;
 
             _timer = _time;
 
@@ -28,7 +28,7 @@ namespace LD39.Screens.Recharge
             if (_timer > deltaTime)
                 _timer -= deltaTime;
             else
-                return ScreenChangeRequest.Replace(new GameScreen(_context, _stationID));
+                return ScreenChangeRequest.Replace(new GameScreen(_context, _playerData));
             return null;
         }
 

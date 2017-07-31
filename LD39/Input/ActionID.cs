@@ -6,6 +6,7 @@
         MoveRight,
         MoveUp,
         MoveDown,
-        Attack
+        Attack,
+        Enter
     }
 }

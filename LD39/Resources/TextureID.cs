@@ -17,6 +17,8 @@
         Station,
         Spikes,
         Missile,
-        MissileLauncher
+        MissileLauncher,
+        Explosion,
+        Cache
     }
 }

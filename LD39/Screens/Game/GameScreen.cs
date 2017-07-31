@@ -4,9 +4,11 @@ using LD39.Animation;
 using LD39.Components;
 using LD39.Extensions;
 using LD39.Resources;
+using LD39.Screens.End;
 using LD39.Screens.Recharge;
 using LD39.Systems;
 using LD39.Tiles;
+using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using System;
@@ -22,14 +24,17 @@ namespace LD39.Screens.Game
         private readonly Entity _character;
         private readonly Sprite _batteryBack, _batteryFill;
         private readonly FixedFrameAnimation _droneAnimation, _stationAnimation;
-        private readonly int _station;
+        private readonly PlayerData _playerData;
+        private readonly Sound _cacheGet;
         private float _displayedPower = 1f;
         private int _rechargeStation = -1;
+        private ScreenChangeRequest _request = null;
+        private readonly Sprite _cache0, _cache1, _cache2;
 
-        public GameScreen(Context context, int stationID)
+        public GameScreen(Context context, PlayerData playerData)
         {
             _context = context;
-            _station = stationID;
+            _playerData = playerData;
 
             TmxMap map = new TmxMap("Resources/map.tmx");
 
@@ -41,16 +46,22 @@ namespace LD39.Screens.Game
             bool[,] collisions = new bool[backgroundMap.GetLength(0), backgroundMap.GetLength(1)];
             for (int y = 0; y < collisions.GetLength(1); y++)
                 for (int x = 0; x < collisions.GetLength(0); x++)
-                    collisions[x, y] = backgroundMap[x, y] != 1;
+                    collisions[x, y] = backgroundMap[x, y] == 0 || backgroundMap[x, y] == -1 || backgroundMap[x, y] == 2 || backgroundMap[x, y] == 20;
 
             _background = new TileMap(_context.Textures[TextureID.Tiles], 16, backgroundMap);
             _foreground = new TileMap(_context.Textures[TextureID.Tiles], 16, new int[backgroundMap.GetLength(0), backgroundMap.GetLength(1)]);
+
+            _cacheGet = new Sound(_context.SoundBuffers[SoundBufferID.CacheGet]);
+
+            _cache0 = new Sprite(_context.Textures[TextureID.Cache]) { Position = new Vector2f(_context.UpscaleTexture.Size.X - 54f, 2f) };
+            _cache1 = new Sprite(_context.Textures[TextureID.Cache]) { Position = new Vector2f(_context.UpscaleTexture.Size.X - 36f, 2f) };
+            _cache2 = new Sprite(_context.Textures[TextureID.Cache]) { Position = new Vector2f(_context.UpscaleTexture.Size.X - 18f, 2f) };
 
             _entityWorld = new EntityWorld();
             _entityWorld.SystemManager.SetSystem(new CharacterMovementSystem(_context.Actions, _context.Textures, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new DroneSystem(_context.Textures, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new SpikesSystem(16, _context.SoundBuffers), GameLoopType.Update);
-            _entityWorld.SystemManager.SetSystem(new MissileLauncherSystem(_context.Textures), GameLoopType.Update);
+            _entityWorld.SystemManager.SetSystem(new MissileLauncherSystem(_context.Textures, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new CollisionSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new TileCollisionSystem(collisions, 16f, _context.SoundBuffers), GameLoopType.Update);
             _entityWorld.SystemManager.SetSystem(new VelocitySystem(), GameLoopType.Update);
@@ -61,7 +72,7 @@ namespace LD39.Screens.Game
             _entityWorld.SystemManager.SetSystem(new StationSystem(), GameLoopType.Update);
             _entityWorld.SystemManager.GetSystem<StationSystem>()[0].StationTouched += StationSystem_StationTouched;
             _entityWorld.SystemManager.SetSystem(new DrawSystem(context.UpscaleTexture, _background, _foreground), GameLoopType.Draw);
-            _entityWorld.SystemManager.SetSystem(new HealthDrawSystem(context.UpscaleTexture, context.Textures), GameLoopType.Draw);
+            _entityWorld.SystemManager.SetSystem(new HealthDrawSystem(context.UpscaleTexture, context.Textures, context.SoundBuffers), GameLoopType.Draw);
 
             _stationAnimation = new FixedFrameAnimation(16, 16);
             _stationAnimation.AddFrame(0, 0, 1f);
@@ -102,7 +113,7 @@ namespace LD39.Screens.Game
 
                     Entity launcher = _entityWorld.CreateEntity();
                     launcher.AddComponent(new PositionComponent((float)obj.X + (float)obj.Width / 2f, (float)obj.Y + (float)obj.Height / 2f));
-                    launcher.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.MissileLauncher]) { TextureRect = new IntRect(0, 0, 16, 16), Position = new Vector2f(-8f, -8f) }, Layer.Floor));
+                    launcher.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.MissileLauncher]) { Position = new Vector2f(-8f, -16f) }, Layer.Above));
                     launcher.AddComponent(new MissileLauncherComponent(timer));
                 }
                 else if (obj.Properties.ContainsKey("Drone"))
@@ -124,6 +135,26 @@ namespace LD39.Screens.Game
                         Position = new Vector2f(-8f, -16f)
                     }, Layer.Player));
                 }
+                else if (obj.Properties.ContainsKey("Cache"))
+                {
+                    int id = int.Parse(obj.Properties["Cache"]);
+
+                    if (_playerData.Caches[id])
+                        continue;
+
+                    Entity cache = _entityWorld.CreateEntity();
+                    cache.AddComponent(new PositionComponent((float)obj.X + (float)obj.Width / 2f, (float)obj.Y + (float)obj.Height / 2f));
+                    cache.AddComponent(new SpriteComponent(new Sprite(_context.Textures[TextureID.Cache]) { Position = new Vector2f(-8f, -8f) }, Layer.Floor));
+                    cache.AddComponent(new CollisionComponent(4f, false));
+                    cache.GetComponent<CollisionComponent>().Collided += (sender, e) => Cache_Collided(id, cache);
+                }
+                else if (obj.Properties.ContainsKey("Finish"))
+                {
+                    Entity finish = _entityWorld.CreateEntity();
+                    finish.AddComponent(new PositionComponent((float)obj.X + (float)obj.Width / 2f, (float)obj.Y + (float)obj.Height / 2f));
+                    finish.AddComponent(new CollisionComponent(10f, false));
+                    finish.GetComponent<CollisionComponent>().Collided += (sender, e) => Finish_Collided();
+                }
             }
 
             _character = _entityWorld.CreateEntity();
@@ -134,7 +165,7 @@ namespace LD39.Screens.Game
                 PositionComponent positionComponent = stationEntity.GetComponent<PositionComponent>();
                 StationComponent stationComponent = stationEntity.GetComponent<StationComponent>();
 
-                if (stationComponent.ID == stationID)
+                if (stationComponent.ID == _playerData.LastStation)
                 {
                     _character.AddComponent(new PositionComponent(positionComponent.Position));
                     break;
@@ -174,6 +205,19 @@ namespace LD39.Screens.Game
             _entityWorld.Update(0);
         }
 
+        private void Cache_Collided(int id, Entity cache)
+        {
+            cache.Delete();
+            _playerData.Caches[id] = true;
+            _cacheGet.Play();
+        }
+
+        private void Finish_Collided()
+        {
+            new Sound(_context.SoundBuffers[SoundBufferID.Explosion]) { Volume = 30f }.Play();
+            _request = ScreenChangeRequest.Replace(new EndScreen(_context, _playerData));
+        }
+
         private void StationSystem_StationTouched(object sender, StationEventArgs e)
         {
             _rechargeStation = e.ID;
@@ -184,12 +228,15 @@ namespace LD39.Screens.Game
             _entityWorld.Update(deltaTime.AsMicroseconds() * 10);
 
             if (_rechargeStation >= 0)
-                return ScreenChangeRequest.Replace(new RechargeScreen(_context, _rechargeStation));
+            {
+                _playerData.LastStation = _rechargeStation;
+                return ScreenChangeRequest.Replace(new RechargeScreen(_context, _playerData));
+            }
 
             CharacterComponent characterComponent = _character.GetComponent<CharacterComponent>();
 
             if (characterComponent.Power <= 0f)
-                return ScreenChangeRequest.Replace(new RechargeScreen(_context, _station));
+                return ScreenChangeRequest.Replace(new RechargeScreen(_context, _playerData));
 
             characterComponent.Power = Math.Min(1f, characterComponent.Power);
 
@@ -201,7 +248,12 @@ namespace LD39.Screens.Game
                 (int)(_batteryFill.Texture.Size.X * _displayedPower), 
                 (int)_batteryFill.Texture.Size.Y);
 
-            return null;
+            PositionComponent positionComponent = _character.GetComponent<PositionComponent>();
+            Listener.Position = new Vector3f(positionComponent.Position.X, positionComponent.Position.Y, 0f);
+            Listener.UpVector = new Vector3f(0f, 0f, 1f);
+            Listener.Direction = new Vector3f(0f, 0f, -1f);
+
+            return _request;
         }
 
         public void Draw(RenderTarget target, RenderStates states)
@@ -219,6 +271,13 @@ namespace LD39.Screens.Game
 
             target.Draw(_batteryBack, states);
             target.Draw(_batteryFill, states);
+
+            if (_playerData.Caches[0])
+                target.Draw(_cache0, states);
+            if (_playerData.Caches[1])
+                target.Draw(_cache1, states);
+            if (_playerData.Caches[2])
+                target.Draw(_cache2, states);
         }
     }
 }

@@ -35,6 +35,8 @@ namespace LD39.Systems
         private readonly Sound _slashSound, _megaSlashSound, _dashSound, _turnSound, _hitSound;
         private bool _canDash = true;
         private Direction _dashDirection = Direction.None;
+        private Time _dashTimer = Time.Zero;
+        private bool _doDash = false;
         private bool _slash = false;
         private Time _slashCooldown = Time.Zero;
 
@@ -92,22 +94,46 @@ namespace LD39.Systems
 
         private void MoveLeft_Pressed(object sender, EventArgs e)
         {
-            _dashDirection = Direction.Left;
+            if (_dashTimer <= Time.Zero)
+            {
+                _dashDirection = Direction.Left;
+                _dashTimer = Time.FromSeconds(0.3f);
+            }
+            else if (_dashDirection == Direction.Left)
+                _doDash = true;
         }
 
         private void MoveRight_Pressed(object sender, EventArgs e)
         {
-            _dashDirection = Direction.Right;
+            if (_dashTimer <= Time.Zero)
+            {
+                _dashDirection = Direction.Right;
+                _dashTimer = Time.FromSeconds(0.3f);
+            }
+            else if (_dashDirection == Direction.Right)
+                _doDash = true;
         }
 
         private void MoveUp_Pressed(object sender, EventArgs e)
         {
-            _dashDirection = Direction.Up;
+            if (_dashTimer <= Time.Zero)
+            {
+                _dashDirection = Direction.Up;
+                _dashTimer = Time.FromSeconds(0.3f);
+            }
+            else if (_dashDirection == Direction.Up)
+                _doDash = true;
         }
 
         private void MoveDown_Pressed(object sender, EventArgs e)
         {
-            _dashDirection = Direction.Down;
+            if (_dashTimer <= Time.Zero)
+            {
+                _dashDirection = Direction.Down;
+                _dashTimer = Time.FromSeconds(0.3f);
+            }
+            else if (_dashDirection == Direction.Down)
+                _doDash = true;
         }
 
         public override void Process(Entity entity)
@@ -116,6 +142,11 @@ namespace LD39.Systems
 
             PositionComponent positionComponent = entity.GetComponent<PositionComponent>();
             AnimationComponent animationComponent = entity.GetComponent<AnimationComponent>();
+
+            if (_dashTimer > DeltaTime)
+                _dashTimer -= DeltaTime;
+            else
+                _dashTimer = Time.Zero;
 
             if (_slashCooldown > DeltaTime)
                 _slashCooldown -= DeltaTime;
@@ -181,12 +212,20 @@ namespace LD39.Systems
                         break;
                 }
 
-                characterComponent.Power -= 1f / 14f;
-                if (velocity > _speed)
-                    _megaSlashSound.Play();
-                else
-                    _slashSound.Play();
+                characterComponent.Power -= 1f / 28f;
+                _slashSound.Play();
                 _slash = false;
+            }
+
+            if (_doDash)
+            {
+                velocityComponent.Velocity = currentDirection.ToVector() * _dash;
+                _dashDirection = Direction.None;
+                _doDash = false;
+                _dashTimer = Time.Zero;
+                characterComponent.Power -= 1f / 21f;
+                _dashSound.Play();
+                return;
             }
 
             if (animationComponent.Playing)
@@ -195,18 +234,6 @@ namespace LD39.Systems
                     || animationComponent.Animation == _turningUpRight || animationComponent.Animation == _turningRightUp
                     || animationComponent.Animation == _turningUpLeft || animationComponent.Animation == _turningLeftUp)
                 {
-                    if (_dashDirection != Direction.None && _canDash)
-                    {
-                        if (_dashDirection == currentDirection)
-                        {
-                            velocityComponent.Velocity = currentDirection.ToVector() * _dash;
-                            _dashDirection = Direction.None;
-                            _canDash = false;
-                            characterComponent.Power -= 1f / 21f;
-                            _dashSound.Play();
-                            return;
-                        }
-                    }
 
                     if (velocity > _acceleration * DeltaTime.AsSeconds())
                         velocity -= _acceleration * DeltaTime.AsSeconds();
@@ -215,9 +242,7 @@ namespace LD39.Systems
                     velocityComponent.Velocity = velocityComponent.Velocity.Normalize() * velocity;
                     return;
                 }
-
-            _dashDirection = Direction.None;
-            _canDash = true;
+            
 
             Vector2f movement = new Vector2f();
             if (_actions[ActionID.MoveUp].IsHeld)
@@ -331,11 +356,6 @@ namespace LD39.Systems
 
             float power = _slashPower;
             int damage = 2;
-            if (mega)
-            {
-                power *= 2f;
-                damage *= 2;
-            }
 
             VelocityComponent velocityComponent = entity.GetComponent<VelocityComponent>();
             velocityComponent.Velocity += slashDirection.ToVector() * power;

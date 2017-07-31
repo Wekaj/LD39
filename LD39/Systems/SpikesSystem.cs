@@ -5,7 +5,6 @@ using LD39.Extensions;
 using LD39.Resources;
 using SFML.Audio;
 using SFML.System;
-using System;
 using System.Linq;
 
 namespace LD39.Systems
@@ -13,11 +12,12 @@ namespace LD39.Systems
     internal sealed class SpikesSystem : EntityUpdatingSystem
     {
         private readonly Time _spikeTime = Time.FromSeconds(2f);
-        private readonly float _soundDistance = 160f;
+        private readonly float _soundDistance = 120f;
         private readonly int _tileSize;
         private readonly FixedFrameAnimation _extendAnimation, _retractAnimation;
-        private readonly Sound _spikesUp, _spikesDown;
+        private readonly Sound _spikesUpSound, _spikesDownSound;
         private Entity _character;
+        private bool _up = true, _down = true;
 
         public SpikesSystem(int tileSize, SoundBufferLoader soundBuffers) 
             : base(Aspect.All(typeof(PositionComponent), typeof(SpriteComponent), typeof(SpikesComponent), typeof(AnimationComponent)))
@@ -25,8 +25,8 @@ namespace LD39.Systems
             _tileSize = tileSize;
             _extendAnimation = new FixedFrameAnimation(16, 16).AddFrame(1, 0, 1f).AddFrame(2, 0, 1f).AddFrame(3, 0, 1f).AddFrame(4, 0, 1f);
             _retractAnimation = new FixedFrameAnimation(16, 16).AddFrame(3, 0, 1f).AddFrame(2, 0, 1f).AddFrame(1, 0, 1f).AddFrame(0, 0, 1f);
-            _spikesUp = new Sound(soundBuffers[SoundBufferID.SpikesUp]) { Volume = 21f };
-            _spikesDown = new Sound(soundBuffers[SoundBufferID.SpikesDown]) { Volume = 21f };
+            _spikesUpSound = new Sound(soundBuffers[SoundBufferID.SpikesUp]) { Volume = 21f };
+            _spikesDownSound = new Sound(soundBuffers[SoundBufferID.SpikesDown]) { Volume = 21f };
         }
 
         protected override void Begin()
@@ -34,6 +34,8 @@ namespace LD39.Systems
             base.Begin();
 
             _character = EntityWorld.EntityManager.GetEntities(Aspect.All(typeof(CharacterComponent))).First();
+            _up = true;
+            _down = true;
         }
 
         public override void Process(Entity entity)
@@ -54,21 +56,24 @@ namespace LD39.Systems
                 spikesComponent.Timer += _spikeTime - DeltaTime;
                 spikesComponent.Extended = !spikesComponent.Extended;
 
-                float distance = (positionComponent.Position - characterPositionComponent.Position).GetLength();
-
+                float distance = (characterPositionComponent.Position - positionComponent.Position).GetLength();
                 if (spikesComponent.Extended)
                 {
                     animationComponent.Play(_extendAnimation, Time.FromSeconds(0.1f));
-                    _spikesUp.Volume = 21f * Math.Max(_soundDistance - distance, 0f) / _soundDistance;
-                    if (_spikesUp.Volume > 0f)
-                        _spikesUp.Play();
+                    if (distance < _soundDistance && _up)
+                    {
+                        _spikesUpSound.Play();
+                        _up = false;
+                    }
                 }
                 else
                 {
                     animationComponent.Play(_retractAnimation, Time.FromSeconds(0.1f));
-                    _spikesDown.Volume = 21f * Math.Max(_soundDistance - distance, 0f) / _soundDistance;
-                    if (_spikesDown.Volume > 0f)
-                        _spikesDown.Play();
+                    if (distance < _soundDistance && _down)
+                    {
+                        _spikesDownSound.Play();
+                        _down = false;
+                    }
                 }
             }
 

@@ -10,6 +10,9 @@
         Hit,
         Damaged,
         SpikesUp,
-        SpikesDown
+        SpikesDown,
+        Explosion,
+        Blip,
+        CacheGet
     }
 }

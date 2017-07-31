@@ -1,7 +1,9 @@
 ﻿using LD39.Input;
 using LD39.Resources;
 using LD39.Screens;
+using LD39.Screens.End;
 using LD39.Screens.Game;
+using LD39.Screens.Menu;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -51,7 +53,7 @@ namespace LD39
 
         public Game()
         {
-            _window = new RenderWindow(new VideoMode(1366, 768), "Running out of Power");
+            _window = new RenderWindow(new VideoMode(1200, 704), "Running out of Power");
             _window.Closed += Window_Closed;
 
             _window.SetVerticalSyncEnabled(true);
@@ -66,6 +68,7 @@ namespace LD39
             _actions.Add(ActionID.MoveUp, new KeyboardAction(Keyboard.Key.Up));
             _actions.Add(ActionID.MoveDown, new KeyboardAction(Keyboard.Key.Down));
             _actions.Add(ActionID.Attack, new KeyboardAction(Keyboard.Key.Z));
+            _actions.Add(ActionID.Enter, new KeyboardAction(Keyboard.Key.Return));
 
             _textures = new TextureLoader();
             _textures.Load(TextureID.Tiles, "Resources/tiles.png");
@@ -84,8 +87,11 @@ namespace LD39
             _textures.Load(TextureID.Spikes, "Resources/spikes.png");
             _textures.Load(TextureID.Missile, "Resources/missile.png");
             _textures.Load(TextureID.MissileLauncher, "Resources/missile_launcher.png");
+            _textures.Load(TextureID.Explosion, "Resources/explosion.png");
+            _textures.Load(TextureID.Cache, "Resources/cache.png");
 
             _fonts = new FontLoader();
+            _fonts.Load(FontID.Normal, "Resources/PressStart2P.ttf");
 
             _soundBuffers = new SoundBufferLoader();
             _soundBuffers.Load(SoundBufferID.Slash, "Resources/slash.wav");
@@ -97,10 +103,13 @@ namespace LD39
             _soundBuffers.Load(SoundBufferID.Damaged, "Resources/damaged.wav");
             _soundBuffers.Load(SoundBufferID.SpikesUp, "Resources/spikes_up.wav");
             _soundBuffers.Load(SoundBufferID.SpikesDown, "Resources/spikes_down.wav");
+            _soundBuffers.Load(SoundBufferID.Explosion, "Resources/explosion.wav");
+            _soundBuffers.Load(SoundBufferID.Blip, "Resources/blip.wav");
+            _soundBuffers.Load(SoundBufferID.CacheGet, "Resources/cache_get.wav");
 
             _context = new Context(_window, _upscaleTexture, _actions, _textures, _fonts, _soundBuffers);
 
-            _screens = new ScreenStack(new GameScreen(_context, 1));
+            _screens = new ScreenStack(new MenuScreen(_context));
         }
 
         public void Run()
