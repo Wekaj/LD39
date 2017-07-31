@@ -232,6 +232,7 @@ namespace LD39.Screens.Game
             if (_rechargeStation >= 0)
             {
                 _playerData.LastStation = _rechargeStation;
+                _entityWorld.SystemManager.GetSystem<CharacterMovementSystem>()[0].Detach();
                 return ScreenChangeRequest.Replace(new RechargeScreen(_context, _playerData));
             }
 
