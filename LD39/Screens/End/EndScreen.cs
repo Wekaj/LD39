@@ -71,7 +71,7 @@ namespace LD39.Screens.End
                         switch (_caches)
                         {
                             case 0:
-                                _text.DisplayedString += "there is likely missing data \nstill to be found within the ruins.";
+                                _text.DisplayedString += "there is likely missing \ndata still to be found \nwithin the ruins.";
                                 break;
                             case 1:
                                 _text.DisplayedString += "good work!";
@@ -80,7 +80,7 @@ namespace LD39.Screens.End
                                 _text.DisplayedString += "wow, that's impressive!";
                                 break;
                             case 3:
-                                _text.DisplayedString += "holy [REDACTED] you found all \nof the data caches!";
+                                _text.DisplayedString += "holy [REDACTED] you found \nall of the data caches!";
                                 break;
                         }
                         line++;

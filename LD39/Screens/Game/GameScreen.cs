@@ -11,6 +11,7 @@ using LD39.Tiles;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
 using System;
 using TiledSharp;
 
