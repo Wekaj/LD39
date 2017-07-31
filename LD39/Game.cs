@@ -1,8 +1,6 @@
 ﻿using LD39.Input;
 using LD39.Resources;
 using LD39.Screens;
-using LD39.Screens.End;
-using LD39.Screens.Game;
 using LD39.Screens.Menu;
 using SFML.Graphics;
 using SFML.System;
@@ -53,7 +51,7 @@ namespace LD39
 
         public Game()
         {
-            _window = new RenderWindow(new VideoMode(1200, 704), "Running out of Power");
+            _window = new RenderWindow(new VideoMode(1200, 704), "Socketbound");
             _window.Closed += Window_Closed;
 
             _window.SetVerticalSyncEnabled(true);
