@@ -216,6 +216,7 @@ namespace LD39.Screens.Game
         private void Finish_Collided()
         {
             new Sound(_context.SoundBuffers[SoundBufferID.Explosion]) { Volume = 30f }.Play();
+            _entityWorld.SystemManager.GetSystem<CharacterMovementSystem>()[0].Detach();
             _request = ScreenChangeRequest.Replace(new EndScreen(_context, _playerData));
         }
 

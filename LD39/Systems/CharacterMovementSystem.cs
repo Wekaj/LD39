@@ -83,6 +83,15 @@ namespace LD39.Systems
                 _slashAnimation.AddFrame(i, 0, 1f);
         }
 
+        public void Detach()
+        {
+            _actions[ActionID.MoveDown].Pressed -= MoveDown_Pressed;
+            _actions[ActionID.MoveUp].Pressed -= MoveUp_Pressed;
+            _actions[ActionID.MoveRight].Pressed -= MoveRight_Pressed;
+            _actions[ActionID.MoveLeft].Pressed -= MoveLeft_Pressed;
+            _actions[ActionID.Attack].Pressed -= Attack_Pressed;
+        }
+
         private void Attack_Pressed(object sender, EventArgs e)
         {
             if (_slashCooldown <= Time.Zero)
